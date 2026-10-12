@@ -70,7 +70,7 @@
       border: 1px solid var(--border-panel);
       box-shadow: var(--shadow-panel);
       z-index: 10;
-      width: 184px;
+      width: 186px;
     }
     .menu-label {
       font-size: 10px;
@@ -139,6 +139,20 @@
     }
     .hatch-style-btn {
       padding: 6px 6px;
+      font-size: 11px;
+      justify-content: center;
+      text-align: center;
+    }
+
+    /* Selector de paso de imán */
+    .snap-step-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+      padding: 2px 0;
+    }
+    .snap-step-btn {
+      padding: 5px 4px;
       font-size: 11px;
       justify-content: center;
       text-align: center;
@@ -413,6 +427,14 @@
     <div class="menu-label">Asistencia y Grilla</div>
     <button id="btn-straight">📏 Línea Recta</button>
     <button id="btn-snap" class="secondary-active">🧲 Imán a Grilla</button>
+    <div id="snap-step-box" class="slider-box">
+      <span>Paso del Imán:</span>
+      <div class="snap-step-row">
+        <button class="snap-step-btn" data-step="0.25">0.25m</button>
+        <button class="snap-step-btn secondary-active" data-step="0.5">0.50m</button>
+        <button class="snap-step-btn" data-step="1.0">1.0m</button>
+      </div>
+    </div>
     <div class="slider-box">
       <span>Tamaño Grilla: <b id="grid-size-lbl">20x20 m</b></span>
       <input type="range" id="grid-size-slider" min="10" max="80" step="10" value="20" style="width:100%;">
@@ -522,13 +544,27 @@
     activeGridGroup.add(activePlaneMesh);
     scene.add(activeGridGroup);
 
+    // Indicador visual 3D del Imán a Grilla / Vértices
+    const snapMarker = new THREE.Group();
+    const ringGeo = new THREE.RingGeometry(0.08, 0.14, 24);
+    const ringMat = new THREE.MeshBasicMaterial({ color: 0x10b981, side: THREE.DoubleSide, depthTest: false });
+    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+    const dotGeo = new THREE.SphereGeometry(0.045, 12, 12);
+    const dotMat = new THREE.MeshBasicMaterial({ color: 0x34d399, depthTest: false });
+    snapMarker.add(ringMesh);
+    snapMarker.add(new THREE.Mesh(dotGeo, dotMat));
+    snapMarker.visible = false;
+    scene.add(snapMarker);
+
     function updateWorkingPlane() {
       activeGridGroup.position.set(0, 0, 0);
       activeGridGroup.rotation.set(0, 0, 0);
+      ringMesh.rotation.set(0, 0, 0);
 
       if (currentPlaneType === 'XZ') {
         mathPlane.set(new THREE.Vector3(0, 1, 0), -planeOffset);
         activeGridGroup.position.y = planeOffset;
+        ringMesh.rotation.x = -Math.PI / 2;
       } else if (currentPlaneType === 'XY') {
         mathPlane.set(new THREE.Vector3(0, 0, 1), -planeOffset);
         activeGridGroup.rotation.x = Math.PI / 2;
@@ -537,7 +573,9 @@
         mathPlane.set(new THREE.Vector3(1, 0, 0), -planeOffset);
         activeGridGroup.rotation.z = Math.PI / 2;
         activeGridGroup.position.x = planeOffset;
+        ringMesh.rotation.y = Math.PI / 2;
       }
+      snapMarker.visible = false;
     }
     updateWorkingPlane();
 
@@ -545,21 +583,19 @@
     let tool = 'pencil'; // 'pencil' | 'pen' | 'rect-hatch' | 'poly-hatch' | 'eraser' | 'orbit'
     let currentColor = '#e2e8f0';
     let currentStrokeSize = 1.0;
-    let hatchMode = 'diag'; // 'diag' | 'cross' | 'mixed' | 'solid'
+    let hatchMode = 'diag';
     let hatchSpacing = 0.25;
     let straightMode = false;
     let snapToGrid = true;
+    let snapStep = 0.5; // Paso por defecto: 0.50m (coincide con la grilla de 1m y mitades)
     let eraserRadiusPx = 22;
 
-    // Lista de objetos en escena (trazos y rellenos)
     let strokesData = [];
-    // Pila de deshacer ultrarrápida en memoria (guarda referencias sin congelar el iPad)
     const undoStack = [];
     const MAX_UNDO = 30;
 
     const round2 = (n) => Math.round(n * 100) / 100;
 
-    // Simplifica puntos colineales o demasiado pegados para que el archivo pese 95% menos
     function simplifyPoints(pts) {
       if (!pts || pts.length <= 2) return pts;
       const out = [pts[0]];
@@ -570,18 +606,17 @@
 
         const dx1 = curr.x - prev.x, dy1 = curr.y - prev.y, dz1 = curr.z - prev.z;
         const len1Sq = dx1*dx1 + dy1*dy1 + dz1*dz1;
-        if (len1Sq < 0.0025) continue; // Ignorar puntos a menos de 5cm
+        if (len1Sq < 0.0016) continue;
 
         const dx2 = next.x - curr.x, dy2 = next.y - curr.y, dz2 = next.z - curr.z;
         const len2Sq = dx2*dx2 + dy2*dy2 + dz2*dz2;
         if (len2Sq > 0.00001) {
-          // Producto cruz para ver si van en la misma línea recta
           const cx = dy1 * dz2 - dz1 * dy2;
           const cy = dz1 * dx2 - dx1 * dz2;
           const cz = dx1 * dy2 - dy1 * dx2;
           const areaSq = cx*cx + cy*cy + cz*cz;
-          if (areaSq / (len1Sq * len2Sq) < 0.0015) {
-            continue; // Es colineal, no hace falta guardarlo
+          if (areaSq / (len1Sq * len2Sq) < 0.0012) {
+            continue;
           }
         }
         out.push(curr);
@@ -590,7 +625,6 @@
       return out;
     }
 
-    // Serialización compacta (guarda coordenadas con 2 decimales en arreglos cortos)
     function serializeStrokes() {
       const compact = strokesData.map(s => {
         if (s.type === 'fill') {
@@ -629,7 +663,7 @@
       }, 350);
     }
 
-    // --- CONSTRUCCIÓN VISUAL DEL TRAZO (LÁPIZ / PLUMA CON GROSOR AJUSTABLE) ---
+    // --- CONSTRUCCIÓN VISUAL DEL TRAZO ---
     function interpolateForVisuals(rawPts, isPencil) {
       if (!rawPts || rawPts.length < 2) return [];
       const result = [];
@@ -687,7 +721,7 @@
         if (perp.lengthSq() < 0.0001) perp.set(0, 1, 0);
         perp.normalize();
 
-        const jitter = isPencil ? (Math.sin(i * 1.9) * 0.009 * Math.min(1.4, sizeMult)) : 0;
+        const jitter = isPencil ? (Math.sin(i * 1.9) * 0.008 * Math.min(1.4, sizeMult)) : 0;
         const halfW = (baseWidth * (0.4 + pts[i].pressure * 0.9)) * 0.5;
 
         const left = curr.clone().addScaledVector(perp, halfW + jitter);
@@ -714,9 +748,8 @@
       });
       group.add(new THREE.Mesh(ribbonGeo, ribbonMat));
 
-      // Hebras secundarias ligeras de grafito
       const strandCount = isPencil ? 2 : 1;
-      const spread = (isPencil ? 0.032 : 0.008) * Math.min(1.5, sizeMult);
+      const spread = (isPencil ? 0.03 : 0.008) * Math.min(1.5, sizeMult);
       for (let s = 0; s < strandCount; s++) {
         const strandPts = [];
         for (let i = 0; i < pts.length; i++) {
@@ -745,13 +778,13 @@
     function toPlane2D(vec3, pType) {
       if (pType === 'XZ') return [vec3.x, vec3.z];
       if (pType === 'XY') return [vec3.x, vec3.y];
-      return [vec3.z, vec3.y]; // 'YZ'
+      return [vec3.z, vec3.y];
     }
 
     function fromPlane2D(u, v, pType, offset) {
       if (pType === 'XZ') return new THREE.Vector3(u, offset, v);
       if (pType === 'XY') return new THREE.Vector3(u, v, offset);
-      return new THREE.Vector3(offset, v, u); // 'YZ'
+      return new THREE.Vector3(offset, v, u);
     }
 
     function getPlaneNormalObj(pType) {
@@ -796,7 +829,6 @@
       return group;
     }
 
-    // Recorta líneas diagonales a +45° o -45° dentro de cualquier polígono 2D
     function computeHatchSegments2D(poly2D, spacing, angleRad) {
       if (poly2D.length < 3) return [];
       const cosA = Math.cos(-angleRad);
@@ -841,13 +873,11 @@
       return segments;
     }
 
-    // Construye todos los elementos de un Muro/Polígono con Hatch
     function buildHatchElements(poly2D, pType, pOffset, hMode, spacing, color, size) {
       const elements = [];
       if (poly2D.length < 3) return elements;
       const normal = getPlaneNormalObj(pType);
 
-      // 1. Si es Mixto o Sólido, agregamos el paño de relleno translúcido
       if (hMode === 'mixed' || hMode === 'solid') {
         elements.push({
           type: 'fill',
@@ -858,18 +888,12 @@
         });
       }
 
-      // 2. Contorno perimetral estilo boceto (cada lado con su ligero overshoot)
       for (let i = 0; i < poly2D.length; i++) {
         const a2 = poly2D[i];
         const b2 = poly2D[(i + 1) % poly2D.length];
         const va = fromPlane2D(a2[0], a2[1], pType, pOffset);
         const vb = fromPlane2D(b2[0], b2[1], pType, pOffset);
-        const dir = vb.clone().sub(va);
-        if (dir.lengthSq() < 0.0004) continue;
-        dir.normalize();
-        const over = 0.07;
-        const pStart = va.clone().sub(dir.clone().multiplyScalar(over));
-        const pEnd = vb.clone().add(dir.clone().multiplyScalar(over));
+        if (va.distanceToSquared(vb) < 0.0004) continue;
 
         elements.push({
           type: 'stroke',
@@ -878,13 +902,12 @@
           size: size,
           normal,
           points: [
-            { x: pStart.x, y: pStart.y, z: pStart.z, pressure: 0.65 },
-            { x: pEnd.x, y: pEnd.y, z: pEnd.z, pressure: 0.65 }
+            { x: va.x, y: va.y, z: va.z, pressure: 0.65 },
+            { x: vb.x, y: vb.y, z: vb.z, pressure: 0.65 }
           ]
         });
       }
 
-      // 3. Líneas interiores de Hatch (si es diag, cross o mixed)
       if (hMode !== 'solid') {
         const segs45 = computeHatchSegments2D(poly2D, spacing, Math.PI / 4);
         const allSegs = (hMode === 'cross')
@@ -912,14 +935,12 @@
       return elements;
     }
 
-    // Reconstruye escena desde JSON (compatible tanto con el formato nuevo ligero como con el anterior)
     function rebuildAllMeshesFromData(parsedArray) {
       strokesData.forEach(s => { if (s.mesh) scene.remove(s.mesh); });
       strokesData = [];
       if (!Array.isArray(parsedArray)) return;
 
       parsedArray.forEach(item => {
-        // Caso relleno translúcido
         if (item.t === 'f' || item.type === 'fill') {
           const fillObj = {
             type: 'fill',
@@ -937,7 +958,6 @@
           return;
         }
 
-        // Caso trazo (nuevo formato compacto o formato anterior)
         let pts = [];
         if (item.p && Array.isArray(item.p)) {
           pts = item.p.map(arr => ({ x: arr[0], y: arr[1], z: arr[2], pressure: arr[3] ?? 0.55 }));
@@ -976,7 +996,7 @@
       });
     }
 
-    // --- LÁPIZ BORRADOR PARCIAL INTELIGENTE (CORTA LÍNEAS Y HATCHES SIN SATURAR DATOS) ---
+    // --- LÁPIZ BORRADOR PARCIAL INTELIGENTE ---
     const projVec = new THREE.Vector3();
     function eraseAtScreenPoint(clientX, clientY) {
       const width = window.innerWidth;
@@ -988,7 +1008,6 @@
       for (let sIdx = 0; sIdx < strokesData.length; sIdx++) {
         const stroke = strokesData[sIdx];
 
-        // Si es un relleno sólido translúcido, verificar si el borrador toca sus esquinas o centro
         if (stroke.type === 'fill') {
           let hitFill = false;
           const poly = stroke.poly2D;
@@ -1016,7 +1035,6 @@
           continue;
         }
 
-        // Subdividir temporalmente segmentos largos solo para probar el corte con precisión
         const densePts = interpolateForVisuals(stroke.points, true);
         let strokeHit = false;
         const keepFlags = new Array(densePts.length).fill(true);
@@ -1087,17 +1105,75 @@
       return anyModified;
     }
 
-    // --- EVENTOS DE DIBUJO, HATCH Y BORRADO CON APPLE PENCIL ---
+    // --- MOTOR DE IMÁN A GRILLA Y VÉRTICES EXISTENTES ---
     const raycaster = new THREE.Raycaster();
     const eraserCursor = document.getElementById('eraser-cursor');
     let isInteracting = false;
     let didEraseSomething = false;
+    let strokeStartPt = null; // Punto de inicio fijo e inmutable para Línea Recta y Muro
     let rawPoints = [];
     let livePreviewGroup = null;
     let pendingHatchElements = [];
     let activeTouches = 0;
 
-    function get3DPoint(e, forceSnap = false) {
+    function snapPointToGridOrVertex(target) {
+      // 1. Fijar coordenada exacta del plano activo
+      if (currentPlaneType === 'XZ') target.y = planeOffset;
+      else if (currentPlaneType === 'XY') target.z = planeOffset;
+      else if (currentPlaneType === 'YZ') target.x = planeOffset;
+
+      if (!snapToGrid) {
+        snapMarker.visible = false;
+        return target;
+      }
+
+      // 2. Primero verificar si hay un extremo/esquina ya dibujado muy cerca (Imán a Vértices)
+      const vertexSnapDistSq = Math.min(0.28 * 0.28, (snapStep * 0.45) ** 2);
+      let bestVertex = null;
+      let bestDistSq = vertexSnapDistSq;
+
+      for (let i = 0; i < strokesData.length; i++) {
+        const s = strokesData[i];
+        if (!s.points || s.points.length < 2) continue;
+        const ends = [s.points[0], s.points[s.points.length - 1]];
+        for (let k = 0; k < 2; k++) {
+          const ep = ends[k];
+          const dSq = (ep.x - target.x)**2 + (ep.y - target.y)**2 + (ep.z - target.z)**2;
+          if (dSq < bestDistSq) {
+            bestDistSq = dSq;
+            bestVertex = ep;
+          }
+        }
+      }
+
+      if (bestVertex) {
+        target.set(bestVertex.x, bestVertex.y, bestVertex.z);
+        snapMarker.position.copy(target);
+        snapMarker.visible = true;
+        return target;
+      }
+
+      // 3. Si no hay esquina previa, redondear a la cuadrícula según el paso elegido (0.25m, 0.50m o 1.0m)
+      if (currentPlaneType === 'XZ') {
+        target.x = Math.round(target.x / snapStep) * snapStep;
+        target.z = Math.round(target.z / snapStep) * snapStep;
+        target.y = planeOffset;
+      } else if (currentPlaneType === 'XY') {
+        target.x = Math.round(target.x / snapStep) * snapStep;
+        target.y = Math.round(target.y / snapStep) * snapStep;
+        target.z = planeOffset;
+      } else if (currentPlaneType === 'YZ') {
+        target.y = Math.round(target.y / snapStep) * snapStep;
+        target.z = Math.round(target.z / snapStep) * snapStep;
+        target.x = planeOffset;
+      }
+
+      snapMarker.position.copy(target);
+      snapMarker.visible = true;
+      return target;
+    }
+
+    function get3DPoint(e) {
       const rect = renderer.domElement.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -1106,13 +1182,7 @@
       const hit = raycaster.ray.intersectPlane(mathPlane, target);
       if (!hit) return null;
 
-      if (snapToGrid && (straightMode || forceSnap)) {
-        const step = 0.25;
-        target.x = Math.round(target.x / step) * step;
-        target.y = Math.round(target.y / step) * step;
-        target.z = Math.round(target.z / step) * step;
-      }
-      return target;
+      return snapPointToGridOrVertex(target);
     }
 
     function updateEraserCursor(clientX, clientY, visible) {
@@ -1140,6 +1210,8 @@
       const isPen = (e.pointerType === 'pen');
       if (activeTouches >= 2 || (tool === 'orbit' && !isPen)) {
         isInteracting = false;
+        strokeStartPt = null;
+        snapMarker.visible = false;
         updateEraserCursor(0, 0, false);
         clearLivePreview();
         controls.enabled = true;
@@ -1151,17 +1223,19 @@
       pendingHatchElements = [];
 
       if (tool === 'eraser') {
+        snapMarker.visible = false;
         pushUndoState();
         didEraseSomething = eraseAtScreenPoint(e.clientX, e.clientY);
         updateEraserCursor(e.clientX, e.clientY, true);
         return;
       }
 
-      const useSnap = (tool === 'rect-hatch');
-      const pt = get3DPoint(e, useSnap);
+      const pt = get3DPoint(e);
       if (!pt) return;
       const pressure = (isPen && e.pressure > 0) ? e.pressure : 0.55;
-      rawPoints = [{ x: pt.x, y: pt.y, z: pt.z, pressure }];
+      // Guardamos el punto inicial de forma fija para que Línea Recta NUNCA se mueva sola
+      strokeStartPt = { x: pt.x, y: pt.y, z: pt.z, pressure };
+      rawPoints = [{ ...strokeStartPt }];
     });
 
     renderer.domElement.addEventListener('pointermove', (e) => {
@@ -1176,17 +1250,15 @@
         return;
       }
 
-      const useSnap = (tool === 'rect-hatch');
-      const pt = get3DPoint(e, useSnap);
-      if (!pt || rawPoints.length === 0) return;
+      const pt = get3DPoint(e);
+      if (!pt || !strokeStartPt) return;
       const pressure = (e.pointerType === 'pen' && e.pressure > 0) ? e.pressure : 0.55;
 
       // MODO 1: MURO / RECTÁNGULO CON HATCH
       if (tool === 'rect-hatch') {
-        const start = rawPoints[0];
-        const [u1, v1] = toPlane2D(start, currentPlaneType);
+        const [u1, v1] = toPlane2D(strokeStartPt, currentPlaneType);
         const [u2, v2] = toPlane2D(pt, currentPlaneType);
-        if (Math.abs(u2 - u1) < 0.05 && Math.abs(v2 - v1) < 0.05) return;
+        if (Math.abs(u2 - u1) < 0.04 && Math.abs(v2 - v1) < 0.04) return;
 
         const rectPoly = [
           [u1, v1],
@@ -1213,7 +1285,7 @@
       if (tool === 'poly-hatch') {
         const last = rawPoints[rawPoints.length - 1];
         const distSq = (last.x - pt.x)**2 + (last.y - pt.y)**2 + (last.z - pt.z)**2;
-        if (distSq > 0.03) {
+        if (distSq > 0.02) {
           rawPoints.push({ x: pt.x, y: pt.y, z: pt.z, pressure });
         }
         if (rawPoints.length < 3) return;
@@ -1235,27 +1307,22 @@
 
       // MODO 3: LÁPIZ BOCETO Y PLUMA TINTA
       if (straightMode) {
-        const sVec = new THREE.Vector3(rawPoints[0].x, rawPoints[0].y, rawPoints[0].z);
-        const eVec = new THREE.Vector3(pt.x, pt.y, pt.z);
-        const dir = eVec.clone().sub(sVec);
-        if (dir.lengthSq() > 0.0004) {
-          dir.normalize();
-          const over = (tool === 'pencil') ? 0.09 : 0.03;
-          const pStart = sVec.clone().sub(dir.clone().multiplyScalar(over));
-          const pEnd = eVec.clone().add(dir.clone().multiplyScalar(over));
-          rawPoints = [
-            { x: pStart.x, y: pStart.y, z: pStart.z, pressure: rawPoints[0].pressure },
-            { x: pEnd.x, y: pEnd.y, z: pEnd.z, pressure }
-          ];
-        }
+        // El punto inicial permanece 100% fijo en strokeStartPt y el final en pt
+        const distSq = (strokeStartPt.x - pt.x)**2 + (strokeStartPt.y - pt.y)**2 + (strokeStartPt.z - pt.z)**2;
+        if (distSq < 0.0004) return;
+        rawPoints = [
+          { ...strokeStartPt },
+          { x: pt.x, y: pt.y, z: pt.z, pressure }
+        ];
       } else {
         const last = rawPoints[rawPoints.length - 1];
         const distSq = (last.x - pt.x)**2 + (last.y - pt.y)**2 + (last.z - pt.z)**2;
-        if (distSq > 0.012) {
+        if (distSq > 0.008) {
           rawPoints.push({ x: pt.x, y: pt.y, z: pt.z, pressure });
         }
       }
 
+      if (rawPoints.length < 2) return;
       clearLivePreview();
       const previewObj = {
         type: 'stroke',
@@ -1293,7 +1360,7 @@
           autoSaveLocal();
         } else if (livePreviewGroup && rawPoints.length >= 2) {
           pushUndoState();
-          const cleanPts = simplifyPoints(rawPoints);
+          const cleanPts = straightMode ? [...rawPoints] : simplifyPoints(rawPoints);
           const finalStroke = {
             type: 'stroke',
             style: (tool === 'pen') ? 'pen' : 'pencil',
@@ -1308,6 +1375,7 @@
           autoSaveLocal();
         }
         rawPoints = [];
+        strokeStartPt = null;
       }
       controls.enabled = true;
     }
@@ -1315,7 +1383,7 @@
     renderer.domElement.addEventListener('pointerup', endInteraction);
     renderer.domElement.addEventListener('pointercancel', endInteraction);
 
-    // --- BOTONES DE HERRAMIENTAS, HATCH, GROSOR Y COLORES ---
+    // --- BOTONES DE HERRAMIENTAS, HATCH, GROSOR, IMÁN Y COLORES ---
     const btnPencil = document.getElementById('btn-pencil');
     const btnPen = document.getElementById('btn-pen');
     const btnRectHatch = document.getElementById('btn-rect-hatch');
@@ -1343,6 +1411,7 @@
 
       eraserSizeBox.classList.toggle('visible', tool === 'eraser');
       hatchOptionsBox.classList.toggle('visible', tool === 'rect-hatch' || tool === 'poly-hatch');
+      if (tool === 'eraser' || tool === 'orbit') snapMarker.visible = false;
     }
 
     btnPencil.addEventListener('click', () => setTool('pencil'));
@@ -1398,9 +1467,11 @@
       if (tool === 'eraser' || tool === 'orbit') setTool('pencil');
     });
 
-    // Asistencia y Edición
+    // Asistencia, Imán y Edición
     const btnStraight = document.getElementById('btn-straight');
     const btnSnap = document.getElementById('btn-snap');
+    const snapStepBox = document.getElementById('snap-step-box');
+    const snapStepBtns = document.querySelectorAll('.snap-step-btn');
     const btnUndo = document.getElementById('btn-undo');
     const btnClear = document.getElementById('btn-clear');
 
@@ -1412,6 +1483,16 @@
     btnSnap.addEventListener('click', () => {
       snapToGrid = !snapToGrid;
       btnSnap.classList.toggle('secondary-active', snapToGrid);
+      snapStepBox.style.display = snapToGrid ? 'flex' : 'none';
+      if (!snapToGrid) snapMarker.visible = false;
+    });
+
+    snapStepBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        snapStepBtns.forEach(b => b.classList.remove('secondary-active'));
+        btn.classList.add('secondary-active');
+        snapStep = parseFloat(btn.getAttribute('data-step'));
+      });
     });
 
     btnUndo.addEventListener('click', () => {
@@ -1511,7 +1592,7 @@
       }
     });
 
-    // --- SISTEMA DE GUARDADO DE PROYECTOS OPTIMIZADO (CON BLOB NATIVO) ---
+    // --- SISTEMA DE GUARDADO DE PROYECTOS OPTIMIZADO ---
     const modalOverlay = document.getElementById('modal-overlay');
     const btnProjects = document.getElementById('btn-projects');
     const btnCloseModal = document.getElementById('btn-close-modal');
@@ -1615,7 +1696,6 @@
       renderProjectList();
     });
 
-    // Descarga instantánea con Blob nativo (sin trabar Safari en iPad)
     btnExportJson.addEventListener('click', () => {
       const jsonStr = serializeStrokes();
       const blob = new Blob([jsonStr], { type: 'application/json' });
@@ -1650,7 +1730,10 @@
     });
 
     btnExportPng.addEventListener('click', () => {
+      const prevVis = snapMarker.visible;
+      snapMarker.visible = false;
       renderer.render(scene, camera);
+      snapMarker.visible = prevVis;
       renderer.domElement.toBlob((blob) => {
         if (!blob) return;
         const url = URL.createObjectURL(blob);
@@ -1662,13 +1745,12 @@
       }, 'image/png');
     });
 
-    // Restaurar y optimizar automáticamente cualquier dibujo previo al abrir
     window.addEventListener('DOMContentLoaded', () => {
       try {
         const saved = localStorage.getItem('croquis3d_autosave');
         if (saved) {
           rebuildAllMeshesFromData(JSON.parse(saved));
-          autoSaveLocal(); // Guarda inmediatamente la versión ya comprimida
+          autoSaveLocal();
         }
       } catch (e) {}
     });
