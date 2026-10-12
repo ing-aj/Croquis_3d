@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Croquis Estructural 3D</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #141619;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      touch-action: none;
+    }
+    #canvas-container {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    /* Menú Lateral Izquierdo */
+    #sidebar {
+      position: absolute;
+      top: 20px;
+      left: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: rgba(28, 31, 36, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      z-index: 10;
+      width: 155px;
+    }
+    .menu-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8a94a6;
+      margin: 4px 0 2px 4px;
+      font-weight: 700;
+    }
+    button {
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    button:active {
+      transform: scale(0.97);
+    }
+    button.active {
+      background: #3b82f6;
+      color: #ffffff;
+      border-color: #60a5fa;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+    }
+    button.secondary-active {
+      background: #10b981;
+      color: #ffffff;
+      border-color: #34d399;
+    }
+    button.danger {
+      color: #fca5a5;
+      border-color: rgba(248, 113, 113, 0.25);
+    }
+    .divider {
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+      margin: 4px 0;
+    }
+
+    /* Panel Inferior para mover el Plano de Dibujo 3D */
+    #plane-panel {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(28, 31, 36, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 10px 18px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #e2e8f0;
+      font-size: 13px;
+      z-index: 10;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    }
+    .plane-btn {
+      padding: 7px 12px;
+      font-size: 12px;
+    }
+    input[type="range"] {
+      width: 140px;
+      accent-color: #3b82f6;
+    }
+    #plane-val {
+      min-width: 48px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      color: #60a5fa;
+    }
+
+    /* Indicador superior */
+    #status-bar {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(28, 31, 36, 0.75);
+      color: #94a3b8;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      pointer-events: none;
+      z-index: 10;
+    }
+  </style>
+  <!-- Three.js y OrbitControls -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+  <div id="status-bar">Apple Pencil: Dibuja | 2 Dedos: Gira y Zoom</div>
+
+  <!-- Menú Lateral -->
+  <div id="sidebar">
+    <div class="menu-label">Herramienta</div>
+    <button id="btn-pencil" class="active">✏️ Lápiz Boceto</button>
+    <button id="btn-pen">✒️ Pluma Tinta</button>
+    <button id="btn-orbit">🔄 Rotar Cámara</button>
+
+    <div class="divider"></div>
+    <div class="menu-label">Trazo</div>
+    <button id="btn-straight">📏 Línea Recta</button>
+    <button id="btn-snap" class="secondary-active">🧲 Imán a Grilla</button>
+
+    <div class="divider"></div>
+    <div class="menu-label">Acciones</div>
+    <button id="btn-undo">↩️ Deshacer</button>
+    <button id="btn-clear" class="danger">🗑️ Borrar Todo</button>
+  </div>
+
+  <!-- Selector de Plano Estructural 3D -->
+  <div id="plane-panel">
+    <span style="font-weight:600; color:#94a3b8;">Plano:</span>
+    <button id="pl-xz" class="plane-btn active">Planta (Losa)</button>
+    <button id="pl-xy" class="plane-btn">Marco X (Muro)</button>
+    <button id="pl-yz" class="plane-btn">Marco Z (Muro)</button>
+    <span style="margin-left:6px; color:#94a3b8;">Nivel/Eje:</span>
+    <input type="range" id="plane-slider" min="-10" max="10" step="0.5" value="0">
+    <span id="plane-val">0.0 m</span>
+  </div>
+
+  <div id="canvas-container"></div>
+
+  <script>
+    // --- CONFIGURACIÓN DE ESCENA ---
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x141619);
+
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(14, 12, 16);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
+
+    // Controles de Órbita (2 dedos siempre rotan/hacen zoom)
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.target.set(0, 2, 0);
+
+    // Cuadrícula Base del Suelo (Fija en Y = 0)
+    const floorGrid = new THREE.GridHelper(24, 24, 0x3b82f6, 0x262930);
+    scene.add(floorGrid);
+
+    // Ejes de referencia sutiles
+    const axesHelper = new THREE.AxesHelper(3);
+    axesHelper.position.set(-12, 0.01, -12);
+    scene.add(axesHelper);
+
+    // --- PLANO DE TRABAJO ACTIVO (Donde aterriza el lápiz) ---
+    let currentPlaneType = 'XZ'; // 'XZ' (Planta), 'XY' (Vertical X), 'YZ' (Vertical Z)
+    let planeOffset = 0;
+    const mathPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+
+    // Malla visual semitransparente para ver en qué plano estás dibujando
+    const activeGridGroup = new THREE.Group();
+    const activeGrid = new THREE.GridHelper(20, 20, 0x60a5fa, 0x334155);
+    activeGrid.material.transparent = true;
+    activeGrid.material.opacity = 0.45;
+    
+    const planeGeo = new THREE.PlaneGeometry(20, 20);
+    planeGeo.rotateX(-Math.PI / 2);
+    const planeMat = new THREE.MeshBasicMaterial({
+      color: 0x3b82f6,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.04,
+      depthWrite: false
+    });
+    const activePlaneMesh = new THREE.Mesh(planeGeo, planeMat);
+    activeGridGroup.add(activeGrid);
+    activeGridGroup.add(activePlaneMesh);
+    scene.add(activeGridGroup);
+
+    function updateWorkingPlane() {
+      activeGridGroup.position.set(0, 0, 0);
+      activeGridGroup.rotation.set(0, 0, 0);
+
+      if (currentPlaneType === 'XZ') {
+        // Horizontal (Losas / Cimentación)
+        mathPlane.set(new THREE.Vector3(0, 1, 0), -planeOffset);
+        activeGridGroup.position.y = planeOffset;
+      } else if (currentPlaneType === 'XY') {
+        // Vertical Frontal (Columnas y Trabes Eje X)
+        mathPlane.set(new THREE.Vector3(0, 0, 1), -planeOffset);
+        activeGridGroup.rotation.x = Math.PI / 2;
+        activeGridGroup.position.z = planeOffset;
+      } else if (currentPlaneType === 'YZ') {
+        // Vertical Lateral (Columnas y Trabes Eje Z)
+        mathPlane.set(new THREE.Vector3(1, 0, 0), -planeOffset);
+        activeGridGroup.rotation.z = Math.PI / 2;
+        activeGridGroup.position.x = planeOffset;
+      }
+    }
+    updateWorkingPlane();
+
+    // --- ESTADO DE LA HERRAMIENTA ---
+    let tool = 'pencil';       // 'pencil' | 'pen' | 'orbit'
+    let straightMode = false;  // true = vigas/columnas rectas
+    let snapToGrid = true;     // imán cada 0.25m para facilitar esquinas
+    const strokesHistory = [];
+
+    // --- MOTOR DE TRAZO ARTÍSTICO (LÁPIZ / PLUMA CON PRESIÓN) ---
+    const raycaster = new THREE.Raycaster();
+    let isDrawing = false;
+    let rawPoints = []; // [{ pos: Vector3, pressure: float }]
+    let currentPreviewGroup = null;
+    let activeTouches = 0;
+
+    function get3DPoint(e) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera({ x, y }, camera);
+      const target = new THREE.Vector3();
+      const hit = raycaster.ray.intersectPlane(mathPlane, target);
+      if (!hit) return null;
+
+      if (snapToGrid && straightMode) {
+        // En modo estructural recto, redondea a 0.25m para amarrar nodos fácilmente
+        const step = 0.25;
+        target.x = Math.round(target.x / step) * step;
+        target.y = Math.round(target.y / step) * step;
+        target.z = Math.round(target.z / step) * step;
+      }
+      return target;
+    }
+
+    // Genera una cinta 3D sensible a la presión + hebras de grafito desprolijas
+    function buildSketchyStroke(pointsData, style) {
+      const group = new THREE.Group();
+      if (pointsData.length < 2) return group;
+
+      const isPencil = (style === 'pencil');
+      const baseColor = isPencil ? 0xe2e8f0 : 0x38bdf8;
+      const baseWidth = isPencil ? 0.065 : 0.09;
+
+      // Si es modo línea recta, interpolamos puntos intermedios para aplicar vibración de mano alzada
+      let pts = [];
+      if (straightMode && pointsData.length >= 2) {
+        const start = pointsData[0];
+        const end = pointsData[pointsData.length - 1];
+        const dist = start.pos.distanceTo(end.pos);
+        const steps = Math.max(8, Math.floor(dist * 6));
+
+        // Pequeño "overshoot" arquitectónico (extensión de esquina clásica de croquis)
+        const dir = end.pos.clone().sub(start.pos).normalize();
+        const overshoot = isPencil ? 0.14 : 0.06;
+        const pStart = start.pos.clone().sub(dir.clone().multiplyScalar(overshoot));
+        const pEnd = end.pos.clone().add(dir.clone().multiplyScalar(overshoot));
+
+        for (let i = 0; i <= steps; i++) {
+          const t = i / steps;
+          const pos = new THREE.Vector3().lerpVectors(pStart, pEnd, t);
+          const press = THREE.MathUtils.lerp(start.pressure, end.pressure, t);
+          pts.push({ pos, pressure: press });
+        }
+      } else {
+        pts = pointsData;
+      }
+
+      // 1. Cinta principal con grosor variable según la presión del Apple Pencil
+      const positions = [];
+      const planeNormal = mathPlane.normal.clone();
+
+      for (let i = 0; i < pts.length; i++) {
+        const curr = pts[i].pos;
+        const next = (i < pts.length - 1) ? pts[i + 1].pos : curr;
+        const prev = (i > 0) ? pts[i - 1].pos : curr;
+
+        let tangent = next.clone().sub(prev);
+        if (tangent.lengthSq() < 0.00001) tangent.set(1, 0, 0);
+        tangent.normalize();
+
+        const perp = new THREE.Vector3().crossVectors(tangent, planeNormal).normalize();
+        // Vibración orgánica de mano alzada
+        const jitter = isPencil ? (Math.sin(i * 1.7) * 0.012) : 0;
+        const halfW = (baseWidth * (0.4 + pts[i].pressure * 0.9)) * 0.5;
+
+        const left = curr.clone().addScaledVector(perp, halfW + jitter);
+        const right = curr.clone().addScaledVector(perp, -halfW + jitter);
+
+        positions.push(left.x, left.y, left.z);
+        positions.push(right.x, right.y, right.z);
+      }
+
+      const indices = [];
+      for (let i = 0; i < pts.length - 1; i++) {
+        const a = i * 2;
+        const b = i * 2 + 1;
+        const c = (i + 1) * 2;
+        const d = (i + 1) * 2 + 1;
+        indices.push(a, b, c, b, d, c);
+      }
+
+      const ribbonGeo = new THREE.BufferGeometry();
+      ribbonGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      ribbonGeo.setIndex(indices);
+
+      const ribbonMat = new THREE.MeshBasicMaterial({
+        color: baseColor,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: isPencil ? 0.72 : 0.95
+      });
+      group.add(new THREE.Mesh(ribbonGeo, ribbonMat));
+
+      // 2. Hebras secundarias de grafito para darle textura de "boceto a lápiz"
+      const strandCount = isPencil ? 3 : 1;
+      for (let s = 0; s < strandCount; s++) {
+        const strandPts = [];
+        const spread = isPencil ? 0.038 : 0.012;
+        for (let i = 0; i < pts.length; i++) {
+          const p = pts[i].pos;
+          const ox = (Math.random() - 0.5) * spread;
+          const oy = (Math.random() - 0.5) * spread;
+          const oz = (Math.random() - 0.5) * spread;
+          strandPts.push(new THREE.Vector3(p.x + ox, p.y + oy, p.z + oz));
+        }
+        const lineGeo = new THREE.BufferGeometry().setFromPoints(strandPts);
+        const lineMat = new THREE.LineBasicMaterial({
+          color: baseColor,
+          transparent: true,
+          opacity: isPencil ? 0.38 : 0.5
+        });
+        group.add(new THREE.Line(lineGeo, lineMat));
+      }
+
+      return group;
+    }
+
+    // --- EVENTOS DE PUNTERO (APPLE PENCIL + MULTITOUCH) ---
+    renderer.domElement.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'touch') activeTouches++;
+
+      // Si hay 2 dedos en pantalla o el modo es Orbitar (y no es el Apple Pencil), rotamos cámara
+      const isPen = (e.pointerType === 'pen');
+      if (activeTouches >= 2 || (tool === 'orbit' && !isPen)) {
+        isDrawing = false;
+        if (currentPreviewGroup) {
+          scene.remove(currentPreviewGroup);
+          currentPreviewGroup = null;
+        }
+        controls.enabled = true;
+        return;
+      }
+
+      // Iniciar dibujo con Apple Pencil o 1 dedo
+      controls.enabled = false;
+      const pt = get3DPoint(e);
+      if (!pt) return;
+
+      isDrawing = true;
+      const pressure = (e.pointerType === 'pen' && e.pressure > 0) ? e.pressure : 0.55;
+      rawPoints = [{ pos: pt, pressure }];
+    });
+
+    renderer.domElement.addEventListener('pointermove', (e) => {
+      if (!isDrawing) return;
+      if (e.pointerType === 'touch' && activeTouches >= 2) return;
+
+      const pt = get3DPoint(e);
+      if (!pt) return;
+
+      const pressure = (e.pointerType === 'pen' && e.pressure > 0) ? e.pressure : 0.55;
+
+      if (straightMode) {
+        rawPoints = [rawPoints[0], { pos: pt, pressure }];
+      } else {
+        const lastPt = rawPoints[rawPoints.length - 1].pos;
+        if (lastPt.distanceTo(pt) > 0.06) {
+          rawPoints.push({ pos: pt, pressure });
+        }
+      }
+
+      if (currentPreviewGroup) scene.remove(currentPreviewGroup);
+      const activeStyle = (tool === 'pen') ? 'pen' : 'pencil';
+      currentPreviewGroup = buildSketchyStroke(rawPoints, activeStyle);
+      scene.add(currentPreviewGroup);
+    });
+
+    function finishStroke(e) {
+      if (e.pointerType === 'touch') {
+        activeTouches = Math.max(0, activeTouches - 1);
+      }
+      if (isDrawing) {
+        isDrawing = false;
+        if (currentPreviewGroup && rawPoints.length >= 2) {
+          strokesHistory.push(currentPreviewGroup);
+          currentPreviewGroup = null;
+        }
+        rawPoints = [];
+      }
+      // Reactivar controles de órbita para gestos de 2 dedos
+      controls.enabled = true;
+    }
+
+    renderer.domElement.addEventListener('pointerup', finishStroke);
+    renderer.domElement.addEventListener('pointercancel', finishStroke);
+
+    // --- BOTONES DE INTERFAZ ---
+    const btnPencil = document.getElementById('btn-pencil');
+    const btnPen = document.getElementById('btn-pen');
+    const btnOrbit = document.getElementById('btn-orbit');
+    const btnStraight = document.getElementById('btn-straight');
+    const btnSnap = document.getElementById('btn-snap');
+    const btnUndo = document.getElementById('btn-undo');
+    const btnClear = document.getElementById('btn-clear');
+
+    function setTool(selectedTool) {
+      tool = selectedTool;
+      btnPencil.classList.toggle('active', tool === 'pencil');
+      btnPen.classList.toggle('active', tool === 'pen');
+      btnOrbit.classList.toggle('active', tool === 'orbit');
+    }
+
+    btnPencil.addEventListener('click', () => setTool('pencil'));
+    btnPen.addEventListener('click', () => setTool('pen'));
+    btnOrbit.addEventListener('click', () => setTool('orbit'));
+
+    btnStraight.addEventListener('click', () => {
+      straightMode = !straightMode;
+      btnStraight.classList.toggle('secondary-active', straightMode);
+    });
+
+    btnSnap.addEventListener('click', () => {
+      snapToGrid = !snapToGrid;
+      btnSnap.classList.toggle('secondary-active', snapToGrid);
+    });
+
+    btnUndo.addEventListener('click', () => {
+      const last = strokesHistory.pop();
+      if (last) scene.remove(last);
+    });
+
+    btnClear.addEventListener('click', () => {
+      strokesHistory.forEach(s => scene.remove(s));
+      strokesHistory.length = 0;
+    });
+
+    // --- CONTROLES DEL PLANO ESTRUCTURAL 3D ---
+    const plXZ = document.getElementById('pl-xz');
+    const plXY = document.getElementById('pl-xy');
+    const plYZ = document.getElementById('pl-yz');
+    const slider = document.getElementById('plane-slider');
+    const planeVal = document.getElementById('plane-val');
+
+    function selectPlane(type) {
+      currentPlaneType = type;
+      plXZ.classList.toggle('active', type === 'XZ');
+      plXY.classList.toggle('active', type === 'XY');
+      plYZ.classList.toggle('active', type === 'YZ');
+      updateWorkingPlane();
+    }
+
+    plXZ.addEventListener('click', () => selectPlane('XZ'));
+    plXY.addEventListener('click', () => selectPlane('XY'));
+    plYZ.addEventListener('click', () => selectPlane('YZ'));
+
+    slider.addEventListener('input', (e) => {
+      planeOffset = parseFloat(e.target.value);
+      planeVal.textContent = planeOffset.toFixed(1) + ' m';
+      updateWorkingPlane();
+    });
+
+    // --- LOOP DE RENDERIZADO Y RESIZE ---
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>
