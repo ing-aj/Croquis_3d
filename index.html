@@ -70,7 +70,7 @@
       border: 1px solid var(--border-panel);
       box-shadow: var(--shadow-panel);
       z-index: 10;
-      width: 170px;
+      width: 175px;
     }
     .menu-label {
       font-size: 10px;
@@ -150,14 +150,17 @@
       cursor: pointer;
     }
 
-    /* Control de grosor de borrador */
-    #eraser-size-box {
-      display: none;
+    /* Controles deslizantes en menú lateral */
+    .slider-box {
+      display: flex;
       flex-direction: column;
       gap: 4px;
       padding: 4px 2px;
       font-size: 11px;
       color: var(--text-muted);
+    }
+    #eraser-size-box {
+      display: none;
     }
     #eraser-size-box.visible {
       display: flex;
@@ -337,7 +340,7 @@
     <button id="btn-pencil" class="active">✏️ Lápiz Boceto</button>
     <button id="btn-pen">✒️ Pluma Tinta</button>
     <button id="btn-eraser">🧹 Borrador Lápiz</button>
-    <div id="eraser-size-box">
+    <div id="eraser-size-box" class="slider-box">
       <span>Tamaño borrador: <b id="eraser-lbl">22 px</b></span>
       <input type="range" id="eraser-slider" min="10" max="55" step="2" value="22" style="width:100%;">
     </div>
@@ -357,9 +360,13 @@
     </div>
 
     <div class="divider"></div>
-    <div class="menu-label">Asistencia</div>
+    <div class="menu-label">Asistencia y Grilla</div>
     <button id="btn-straight">📏 Línea Recta</button>
     <button id="btn-snap" class="secondary-active">🧲 Imán a Grilla</button>
+    <div class="slider-box">
+      <span>Tamaño Grilla: <b id="grid-size-lbl">20x20 m</b></span>
+      <input type="range" id="grid-size-slider" min="10" max="80" step="10" value="20" style="width:100%;">
+    </div>
 
     <div class="divider"></div>
     <div class="menu-label">Edición</div>
@@ -428,6 +435,7 @@
     controls.target.set(0, 2, 0);
 
     // Cuadrícula Base del Suelo
+    let currentGridSize = 20;
     let floorGrid = new THREE.GridHelper(24, 24, 0x3b82f6, 0x262930);
     scene.add(floorGrid);
 
@@ -485,7 +493,6 @@
     let snapToGrid = true;
     let eraserRadiusPx = 22;
 
-    // Cada elemento en strokesData: { style, color, normal: {x,y,z}, points: [{x,y,z,pressure}], mesh }
     let strokesData = [];
     const undoStack = [];
     const MAX_UNDO = 25;
@@ -514,7 +521,6 @@
     }
 
     // --- CONSTRUCCIÓN VISUAL DEL TRAZO (LÁPIZ / PLUMA) ---
-    // Densifica puntos para que el borrador parcial pueda cortar en cualquier punto intermedio
     function densifyPoints(rawPts, isStraight, isPencil) {
       if (rawPts.length < 2) return [];
       const result = [];
@@ -530,7 +536,6 @@
         if (dir.lengthSq() < 0.0001) return [];
         dir.normalize();
 
-        // Ligero overshoot arquitectónico al inicio y final
         const overshoot = isPencil ? 0.10 : 0.04;
         const pStart = sVec.clone().sub(dir.clone().multiplyScalar(overshoot));
         const pEnd = eVec.clone().add(dir.clone().multiplyScalar(overshoot));
@@ -578,7 +583,6 @@
         strokeObj.normal.z
       );
 
-      // 1. Cinta principal sensible a la presión
       const positions = [];
       for (let i = 0; i < pts.length; i++) {
         const curr = new THREE.Vector3(pts[i].x, pts[i].y, pts[i].z);
@@ -620,7 +624,6 @@
       });
       group.add(new THREE.Mesh(ribbonGeo, ribbonMat));
 
-      // 2. Hebras de grafito deterministas (para que no parpadeen al borrar partes)
       const strandCount = isPencil ? 3 : 1;
       const spread = isPencil ? 0.035 : 0.01;
       for (let s = 0; s < strandCount; s++) {
@@ -665,7 +668,7 @@
       });
     }
 
-    // --- LÁPIZ BORRADOR PARCIAL (CORTA SEGMENTOS DE LÍNEA BAJO EL PUNTERO) ---
+    // --- LÁPIZ BORRADOR PARCIAL ---
     const projVec = new THREE.Vector3();
     function eraseAtScreenPoint(clientX, clientY) {
       const width = window.innerWidth;
@@ -699,7 +702,6 @@
           anyModified = true;
           scene.remove(stroke.mesh);
 
-          // Dividir el trazo en sub-trazos continuos que sobrevivieron al borrador
           let currentSegment = [];
           for (let i = 0; i < pts.length; i++) {
             if (keepFlags[i]) {
@@ -913,7 +915,6 @@
       eraserLbl.textContent = eraserRadiusPx + ' px';
     });
 
-    // Selección de Color
     const swatches = document.querySelectorAll('.color-swatch');
     const customColorInput = document.getElementById('custom-color');
 
@@ -962,37 +963,56 @@
       autoSaveLocal();
     });
 
-    // --- MODO CLARO / OSCURO ---
-    const btnTheme = document.getElementById('btn-theme');
-    btnTheme.addEventListener('click', () => {
-      isLightMode = !isLightMode;
-      document.body.classList.toggle('light-mode', isLightMode);
-      btnTheme.textContent = isLightMode ? '🌙 Oscuro' : '☀️ Claro';
-
-      scene.background = new THREE.Color(isLightMode ? 0xf4f1ea : 0x141619);
-
-      scene.remove(floorGrid);
-      floorGrid = new THREE.GridHelper(
-        24, 24,
-        isLightMode ? 0x2563eb : 0x3b82f6,
-        isLightMode ? 0xd6d3cd : 0x262930
-      );
-      scene.add(floorGrid);
-
-      // Si el usuario tenía el color blanco por defecto al pasar a modo claro, sugerimos grafito oscuro
-      if (isLightMode && currentColor === '#e2e8f0') {
-        swatches[1].click();
-      } else if (!isLightMode && currentColor === '#1e293b') {
-        swatches[0].click();
-      }
-    });
-
-    // --- PLANOS ESTRUCTURALES 3D ---
+    // --- PLANOS ESTRUCTURALES 3D Y CONTROL DE TAMAÑO DE GRILLA ---
     const plXZ = document.getElementById('pl-xz');
     const plXY = document.getElementById('pl-xy');
     const plYZ = document.getElementById('pl-yz');
     const planeSlider = document.getElementById('plane-slider');
     const planeVal = document.getElementById('plane-val');
+    const gridSizeSlider = document.getElementById('grid-size-slider');
+    const gridSizeLbl = document.getElementById('grid-size-lbl');
+
+    function rebuildGrids(size) {
+      currentGridSize = size;
+      gridSizeLbl.textContent = `${size}x${size} m`;
+
+      // 1. Actualizar cuadrícula base del suelo
+      scene.remove(floorGrid);
+      floorGrid = new THREE.GridHelper(
+        size + 4, size + 4,
+        isLightMode ? 0x2563eb : 0x3b82f6,
+        isLightMode ? 0xd6d3cd : 0x262930
+      );
+      scene.add(floorGrid);
+      axesHelper.position.set(-(size / 2 + 2), 0.01, -(size / 2 + 2));
+
+      // 2. Actualizar cuadrícula y plano activo de dibujo
+      activeGridGroup.remove(activeGrid);
+      activeGrid = new THREE.GridHelper(size, size, 0x60a5fa, 0x334155);
+      activeGrid.material.transparent = true;
+      activeGrid.material.opacity = 0.45;
+      activeGridGroup.add(activeGrid);
+
+      activePlaneMesh.geometry.dispose();
+      const newPlaneGeo = new THREE.PlaneGeometry(size, size);
+      newPlaneGeo.rotateX(-Math.PI / 2);
+      activePlaneMesh.geometry = newPlaneGeo;
+
+      // 3. Ajustar el rango del deslizador de Nivel/Eje automáticamente
+      const half = size / 2;
+      planeSlider.min = -half;
+      planeSlider.max = half;
+      if (planeOffset > half || planeOffset < -half) {
+        planeOffset = 0;
+        planeSlider.value = 0;
+        planeVal.textContent = '0.0 m';
+        updateWorkingPlane();
+      }
+    }
+
+    gridSizeSlider.addEventListener('input', (e) => {
+      rebuildGrids(parseInt(e.target.value, 10));
+    });
 
     function selectPlane(type) {
       currentPlaneType = type;
@@ -1012,7 +1032,24 @@
       updateWorkingPlane();
     });
 
-    // --- SISTEMA DE GUARDADO DE PROYECTOS (LOCALSTORAGE + ARCHIVOS JSON + PNG) ---
+    // --- MODO CLARO / OSCURO ---
+    const btnTheme = document.getElementById('btn-theme');
+    btnTheme.addEventListener('click', () => {
+      isLightMode = !isLightMode;
+      document.body.classList.toggle('light-mode', isLightMode);
+      btnTheme.textContent = isLightMode ? '🌙 Oscuro' : '☀️ Claro';
+
+      scene.background = new THREE.Color(isLightMode ? 0xf4f1ea : 0x141619);
+      rebuildGrids(currentGridSize);
+
+      if (isLightMode && currentColor === '#e2e8f0') {
+        swatches[1].click();
+      } else if (!isLightMode && currentColor === '#1e293b') {
+        swatches[0].click();
+      }
+    });
+
+    // --- SISTEMA DE GUARDADO DE PROYECTOS ---
     const modalOverlay = document.getElementById('modal-overlay');
     const btnProjects = document.getElementById('btn-projects');
     const btnCloseModal = document.getElementById('btn-close-modal');
@@ -1104,7 +1141,6 @@
       renderProjectList();
     });
 
-    // Descargar como archivo .json a Archivos del iPad
     btnExportJson.addEventListener('click', () => {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(serializeStrokes());
       const a = document.createElement('a');
@@ -1115,7 +1151,6 @@
       a.remove();
     });
 
-    // Importar archivo .json
     btnImportJson.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -1136,7 +1171,6 @@
       fileInput.value = '';
     });
 
-    // Exportar captura PNG
     btnExportPng.addEventListener('click', () => {
       renderer.render(scene, camera);
       const dataUrl = renderer.domElement.toDataURL('image/png');
@@ -1146,7 +1180,6 @@
       a.click();
     });
 
-    // Restaurar autoguardado al abrir la app
     window.addEventListener('DOMContentLoaded', () => {
       try {
         const saved = localStorage.getItem('croquis3d_autosave');
