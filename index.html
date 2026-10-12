@@ -7,6 +7,27 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Croquis Estructural 3D</title>
   <style>
+    :root {
+      --bg-canvas: #141619;
+      --bg-panel: rgba(28, 31, 36, 0.88);
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+      --border-panel: rgba(255, 255, 255, 0.12);
+      --btn-bg: rgba(255, 255, 255, 0.06);
+      --btn-border: rgba(255, 255, 255, 0.1);
+      --shadow-panel: 0 8px 24px rgba(0, 0, 0, 0.45);
+    }
+    body.light-mode {
+      --bg-canvas: #f4f1ea;
+      --bg-panel: rgba(255, 255, 255, 0.90);
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-panel: rgba(15, 23, 42, 0.12);
+      --btn-bg: rgba(15, 23, 42, 0.05);
+      --btn-border: rgba(15, 23, 42, 0.12);
+      --shadow-panel: 0 8px 24px rgba(15, 23, 42, 0.12);
+    }
+
     * {
       box-sizing: border-box;
       -webkit-user-select: none;
@@ -19,7 +40,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #141619;
+      background-color: var(--bg-canvas);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       touch-action: none;
     }
@@ -34,35 +55,37 @@
     /* Menú Lateral Izquierdo */
     #sidebar {
       position: absolute;
-      top: 20px;
+      top: 16px;
       left: 16px;
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      background: rgba(28, 31, 36, 0.88);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      gap: 6px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       padding: 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      border-radius: 16px;
+      border: 1px solid var(--border-panel);
+      box-shadow: var(--shadow-panel);
       z-index: 10;
-      width: 155px;
+      width: 170px;
     }
     .menu-label {
       font-size: 10px;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #8a94a6;
-      margin: 4px 0 2px 4px;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin: 4px 0 2px 2px;
       font-weight: 700;
     }
     button {
-      background: rgba(255, 255, 255, 0.06);
-      color: #e2e8f0;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--btn-bg);
+      color: var(--text-main);
+      border: 1px solid var(--btn-border);
       border-radius: 10px;
-      padding: 10px 12px;
+      padding: 9px 11px;
       font-size: 13px;
       font-weight: 600;
       text-align: left;
@@ -79,7 +102,7 @@
       background: #3b82f6;
       color: #ffffff;
       border-color: #60a5fa;
-      box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
     }
     button.secondary-active {
       background: #10b981;
@@ -87,63 +110,210 @@
       border-color: #34d399;
     }
     button.danger {
-      color: #fca5a5;
-      border-color: rgba(248, 113, 113, 0.25);
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.25);
     }
     .divider {
       height: 1px;
-      background: rgba(255, 255, 255, 0.1);
-      margin: 4px 0;
+      background: var(--border-panel);
+      margin: 3px 0;
+    }
+
+    /* Paleta de Colores */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      padding: 2px 0;
+    }
+    .color-swatch {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      padding: 0;
+      transition: transform 0.12s ease;
+    }
+    .color-swatch.active {
+      border-color: #3b82f6;
+      transform: scale(1.1);
+      box-shadow: 0 0 0 2px var(--bg-panel);
+    }
+    #custom-color {
+      width: 100%;
+      height: 30px;
+      border: 1px solid var(--btn-border);
+      border-radius: 8px;
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    /* Control de grosor de borrador */
+    #eraser-size-box {
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      padding: 4px 2px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    #eraser-size-box.visible {
+      display: flex;
     }
 
     /* Panel Inferior para mover el Plano de Dibujo 3D */
     #plane-panel {
       position: absolute;
-      bottom: 24px;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(28, 31, 36, 0.88);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      padding: 10px 18px;
+      background: var(--bg-panel);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      padding: 10px 16px;
       border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      border: 1px solid var(--border-panel);
       display: flex;
       align-items: center;
-      gap: 12px;
-      color: #e2e8f0;
+      gap: 10px;
+      color: var(--text-main);
       font-size: 13px;
       z-index: 10;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      box-shadow: var(--shadow-panel);
+      white-space: nowrap;
     }
     .plane-btn {
-      padding: 7px 12px;
+      padding: 7px 11px;
       font-size: 12px;
     }
     input[type="range"] {
-      width: 140px;
+      width: 130px;
       accent-color: #3b82f6;
     }
     #plane-val {
-      min-width: 48px;
+      min-width: 46px;
       font-variant-numeric: tabular-nums;
       font-weight: 700;
-      color: #60a5fa;
+      color: #3b82f6;
     }
 
-    /* Indicador superior */
-    #status-bar {
+    /* Barra superior derecha */
+    #top-right-bar {
       position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(28, 31, 36, 0.75);
-      color: #94a3b8;
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      pointer-events: none;
+      top: 16px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
       z-index: 10;
+    }
+    .top-pill {
+      background: var(--bg-panel);
+      color: var(--text-main);
+      padding: 9px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--border-panel);
+      box-shadow: var(--shadow-panel);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Cursor circular visual del Borrador */
+    #eraser-cursor {
+      position: fixed;
+      pointer-events: none;
+      border: 2px solid #ef4444;
+      background: rgba(239, 68, 68, 0.18);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+      z-index: 25;
+    }
+
+    /* Modal de Guardar / Abrir Proyectos */
+    #modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+    #modal-overlay.open {
+      display: flex;
+    }
+    .modal-card {
+      background: var(--bg-panel);
+      color: var(--text-main);
+      border: 1px solid var(--border-panel);
+      border-radius: 18px;
+      width: 92%;
+      max-width: 440px;
+      padding: 20px;
+      box-shadow: var(--shadow-panel);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: 85vh;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .save-row {
+      display: flex;
+      gap: 8px;
+    }
+    .save-row input {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--text-main);
+      font-size: 14px;
+      -webkit-user-select: text;
+      user-select: text;
+    }
+    #project-list {
+      overflow-y: auto;
+      max-height: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .project-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--btn-bg);
+      border: 1px solid var(--btn-border);
+      font-size: 13px;
+    }
+    .project-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .export-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .export-row button {
+      justify-content: center;
+      text-align: center;
     }
   </style>
   <!-- Three.js y OrbitControls -->
@@ -152,35 +322,87 @@
 </head>
 <body>
 
-  <div id="status-bar">Apple Pencil: Dibuja | 2 Dedos: Gira y Zoom</div>
+  <!-- Cursor visual para el borrador -->
+  <div id="eraser-cursor"></div>
 
-  <!-- Menú Lateral -->
+  <!-- Barra Superior Derecha -->
+  <div id="top-right-bar">
+    <button id="btn-projects" class="top-pill">💾 Proyectos</button>
+    <button id="btn-theme" class="top-pill" title="Cambiar modo Claro / Oscuro">☀️ Claro</button>
+  </div>
+
+  <!-- Menú Lateral Izquierdo -->
   <div id="sidebar">
     <div class="menu-label">Herramienta</div>
     <button id="btn-pencil" class="active">✏️ Lápiz Boceto</button>
     <button id="btn-pen">✒️ Pluma Tinta</button>
+    <button id="btn-eraser">🧹 Borrador Lápiz</button>
+    <div id="eraser-size-box">
+      <span>Tamaño borrador: <b id="eraser-lbl">22 px</b></span>
+      <input type="range" id="eraser-slider" min="10" max="55" step="2" value="22" style="width:100%;">
+    </div>
     <button id="btn-orbit">🔄 Rotar Cámara</button>
 
     <div class="divider"></div>
-    <div class="menu-label">Trazo</div>
+    <div class="menu-label">Color de Línea</div>
+    <div class="color-grid" id="color-palette">
+      <button class="color-swatch active" data-color="#e2e8f0" style="background:#e2e8f0;" title="Tiza / Grafito Claro"></button>
+      <button class="color-swatch" data-color="#1e293b" style="background:#1e293b;" title="Grafito Oscuro / Tinta"></button>
+      <button class="color-swatch" data-color="#38bdf8" style="background:#38bdf8;" title="Azul Arquitectónico"></button>
+      <button class="color-swatch" data-color="#ef4444" style="background:#ef4444;" title="Rojo Estructural"></button>
+      <button class="color-swatch" data-color="#10b981" style="background:#10b981;" title="Verde Ejes"></button>
+      <button class="color-swatch" data-color="#f59e0b" style="background:#f59e0b;" title="Ámbar Cimentación"></button>
+      <button class="color-swatch" data-color="#a855f7" style="background:#a855f7;" title="Violeta"></button>
+      <input type="color" id="custom-color" value="#38bdf8" title="Color personalizado">
+    </div>
+
+    <div class="divider"></div>
+    <div class="menu-label">Asistencia</div>
     <button id="btn-straight">📏 Línea Recta</button>
     <button id="btn-snap" class="secondary-active">🧲 Imán a Grilla</button>
 
     <div class="divider"></div>
-    <div class="menu-label">Acciones</div>
+    <div class="menu-label">Edición</div>
     <button id="btn-undo">↩️ Deshacer</button>
     <button id="btn-clear" class="danger">🗑️ Borrar Todo</button>
   </div>
 
   <!-- Selector de Plano Estructural 3D -->
   <div id="plane-panel">
-    <span style="font-weight:600; color:#94a3b8;">Plano:</span>
+    <span style="font-weight:600; color:var(--text-muted);">Plano:</span>
     <button id="pl-xz" class="plane-btn active">Planta (Losa)</button>
-    <button id="pl-xy" class="plane-btn">Marco X (Muro)</button>
-    <button id="pl-yz" class="plane-btn">Marco Z (Muro)</button>
-    <span style="margin-left:6px; color:#94a3b8;">Nivel/Eje:</span>
+    <button id="pl-xy" class="plane-btn">Marco X</button>
+    <button id="pl-yz" class="plane-btn">Marco Z</button>
+    <span style="margin-left:4px; color:var(--text-muted);">Nivel:</span>
     <input type="range" id="plane-slider" min="-10" max="10" step="0.5" value="0">
     <span id="plane-val">0.0 m</span>
+  </div>
+
+  <!-- Modal de Proyectos (Guardar / Cargar / Exportar) -->
+  <div id="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span>💾 Mis Proyectos en este iPad</span>
+        <button id="btn-close-modal" style="padding:6px 10px;">✕</button>
+      </div>
+
+      <div class="save-row">
+        <input type="text" id="project-name-input" placeholder="Nombre (ej. Casa Morelia)">
+        <button id="btn-save-project" class="active">Guardar</button>
+      </div>
+
+      <div class="menu-label">Proyectos Guardados</div>
+      <div id="project-list"></div>
+
+      <div class="divider"></div>
+      <div class="menu-label">Archivos y Captura</div>
+      <div class="export-row">
+        <button id="btn-export-json">📥 Bajar Archivo</button>
+        <button id="btn-import-json">📤 Abrir Archivo</button>
+        <button id="btn-export-png" style="grid-column: span 2;">📸 Guardar Imagen PNG</button>
+      </div>
+      <input type="file" id="file-input" accept=".json" style="display:none;">
+    </div>
   </div>
 
   <div id="canvas-container"></div>
@@ -189,42 +411,40 @@
     // --- CONFIGURACIÓN DE ESCENA ---
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
+    let isLightMode = false;
     scene.background = new THREE.Color(0x141619);
 
     const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(14, 12, 16);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true, powerPreference: "high-performance" });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
 
-    // Controles de Órbita (2 dedos siempre rotan/hacen zoom)
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.06;
     controls.target.set(0, 2, 0);
 
-    // Cuadrícula Base del Suelo (Fija en Y = 0)
-    const floorGrid = new THREE.GridHelper(24, 24, 0x3b82f6, 0x262930);
+    // Cuadrícula Base del Suelo
+    let floorGrid = new THREE.GridHelper(24, 24, 0x3b82f6, 0x262930);
     scene.add(floorGrid);
 
-    // Ejes de referencia sutiles
     const axesHelper = new THREE.AxesHelper(3);
     axesHelper.position.set(-12, 0.01, -12);
     scene.add(axesHelper);
 
-    // --- PLANO DE TRABAJO ACTIVO (Donde aterriza el lápiz) ---
-    let currentPlaneType = 'XZ'; // 'XZ' (Planta), 'XY' (Vertical X), 'YZ' (Vertical Z)
+    // --- PLANO DE TRABAJO ACTIVO ---
+    let currentPlaneType = 'XZ';
     let planeOffset = 0;
     const mathPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
 
-    // Malla visual semitransparente para ver en qué plano estás dibujando
     const activeGridGroup = new THREE.Group();
-    const activeGrid = new THREE.GridHelper(20, 20, 0x60a5fa, 0x334155);
+    let activeGrid = new THREE.GridHelper(20, 20, 0x60a5fa, 0x334155);
     activeGrid.material.transparent = true;
     activeGrid.material.opacity = 0.45;
-    
+
     const planeGeo = new THREE.PlaneGeometry(20, 20);
     planeGeo.rotateX(-Math.PI / 2);
     const planeMat = new THREE.MeshBasicMaterial({
@@ -244,16 +464,13 @@
       activeGridGroup.rotation.set(0, 0, 0);
 
       if (currentPlaneType === 'XZ') {
-        // Horizontal (Losas / Cimentación)
         mathPlane.set(new THREE.Vector3(0, 1, 0), -planeOffset);
         activeGridGroup.position.y = planeOffset;
       } else if (currentPlaneType === 'XY') {
-        // Vertical Frontal (Columnas y Trabes Eje X)
         mathPlane.set(new THREE.Vector3(0, 0, 1), -planeOffset);
         activeGridGroup.rotation.x = Math.PI / 2;
         activeGridGroup.position.z = planeOffset;
       } else if (currentPlaneType === 'YZ') {
-        // Vertical Lateral (Columnas y Trabes Eje Z)
         mathPlane.set(new THREE.Vector3(1, 0, 0), -planeOffset);
         activeGridGroup.rotation.z = Math.PI / 2;
         activeGridGroup.position.x = planeOffset;
@@ -261,17 +478,276 @@
     }
     updateWorkingPlane();
 
-    // --- ESTADO DE LA HERRAMIENTA ---
-    let tool = 'pencil';       // 'pencil' | 'pen' | 'orbit'
-    let straightMode = false;  // true = vigas/columnas rectas
-    let snapToGrid = true;     // imán cada 0.25m para facilitar esquinas
-    const strokesHistory = [];
+    // --- ESTADO GLOBAL Y DATOS DE TRAZOS ---
+    let tool = 'pencil'; // 'pencil' | 'pen' | 'eraser' | 'orbit'
+    let currentColor = '#e2e8f0';
+    let straightMode = false;
+    let snapToGrid = true;
+    let eraserRadiusPx = 22;
 
-    // --- MOTOR DE TRAZO ARTÍSTICO (LÁPIZ / PLUMA CON PRESIÓN) ---
+    // Cada elemento en strokesData: { style, color, normal: {x,y,z}, points: [{x,y,z,pressure}], mesh }
+    let strokesData = [];
+    const undoStack = [];
+    const MAX_UNDO = 25;
+
+    function serializeStrokes() {
+      return JSON.stringify(strokesData.map(s => ({
+        style: s.style,
+        color: s.color,
+        normal: s.normal,
+        points: s.points
+      })));
+    }
+
+    function pushUndoState() {
+      const snap = serializeStrokes();
+      if (undoStack.length === 0 || undoStack[undoStack.length - 1] !== snap) {
+        undoStack.push(snap);
+        if (undoStack.length > MAX_UNDO) undoStack.shift();
+      }
+    }
+
+    function autoSaveLocal() {
+      try {
+        localStorage.setItem('croquis3d_autosave', serializeStrokes());
+      } catch (err) {}
+    }
+
+    // --- CONSTRUCCIÓN VISUAL DEL TRAZO (LÁPIZ / PLUMA) ---
+    // Densifica puntos para que el borrador parcial pueda cortar en cualquier punto intermedio
+    function densifyPoints(rawPts, isStraight, isPencil) {
+      if (rawPts.length < 2) return [];
+      const result = [];
+      const maxStep = 0.08;
+
+      let sourcePts = rawPts;
+      if (isStraight) {
+        const start = rawPts[0];
+        const end = rawPts[rawPts.length - 1];
+        const sVec = new THREE.Vector3(start.x, start.y, start.z);
+        const eVec = new THREE.Vector3(end.x, end.y, end.z);
+        const dir = eVec.clone().sub(sVec);
+        if (dir.lengthSq() < 0.0001) return [];
+        dir.normalize();
+
+        // Ligero overshoot arquitectónico al inicio y final
+        const overshoot = isPencil ? 0.10 : 0.04;
+        const pStart = sVec.clone().sub(dir.clone().multiplyScalar(overshoot));
+        const pEnd = eVec.clone().add(dir.clone().multiplyScalar(overshoot));
+
+        sourcePts = [
+          { x: pStart.x, y: pStart.y, z: pStart.z, pressure: start.pressure },
+          { x: pEnd.x, y: pEnd.y, z: pEnd.z, pressure: end.pressure }
+        ];
+      }
+
+      for (let i = 0; i < sourcePts.length - 1; i++) {
+        const a = sourcePts[i];
+        const b = sourcePts[i + 1];
+        const va = new THREE.Vector3(a.x, a.y, a.z);
+        const vb = new THREE.Vector3(b.x, b.y, b.z);
+        const dist = va.distanceTo(vb);
+        const steps = Math.max(1, Math.ceil(dist / maxStep));
+
+        for (let s = 0; s < steps; s++) {
+          const t = s / steps;
+          result.push({
+            x: THREE.MathUtils.lerp(a.x, b.x, t),
+            y: THREE.MathUtils.lerp(a.y, b.y, t),
+            z: THREE.MathUtils.lerp(a.z, b.z, t),
+            pressure: THREE.MathUtils.lerp(a.pressure, b.pressure, t)
+          });
+        }
+      }
+      const last = sourcePts[sourcePts.length - 1];
+      result.push({ x: last.x, y: last.y, z: last.z, pressure: last.pressure });
+      return result;
+    }
+
+    function createStrokeMesh(strokeObj) {
+      const pts = strokeObj.points;
+      const group = new THREE.Group();
+      if (!pts || pts.length < 2) return group;
+
+      const isPencil = (strokeObj.style === 'pencil');
+      const colorVal = new THREE.Color(strokeObj.color || '#e2e8f0');
+      const baseWidth = isPencil ? 0.065 : 0.095;
+      const planeNormal = new THREE.Vector3(
+        strokeObj.normal.x,
+        strokeObj.normal.y,
+        strokeObj.normal.z
+      );
+
+      // 1. Cinta principal sensible a la presión
+      const positions = [];
+      for (let i = 0; i < pts.length; i++) {
+        const curr = new THREE.Vector3(pts[i].x, pts[i].y, pts[i].z);
+        const next = (i < pts.length - 1) ? new THREE.Vector3(pts[i+1].x, pts[i+1].y, pts[i+1].z) : curr;
+        const prev = (i > 0) ? new THREE.Vector3(pts[i-1].x, pts[i-1].y, pts[i-1].z) : curr;
+
+        let tangent = next.clone().sub(prev);
+        if (tangent.lengthSq() < 0.00001) tangent.set(1, 0, 0);
+        tangent.normalize();
+
+        let perp = new THREE.Vector3().crossVectors(tangent, planeNormal);
+        if (perp.lengthSq() < 0.0001) perp.set(0, 1, 0);
+        perp.normalize();
+
+        const jitter = isPencil ? (Math.sin(i * 1.9) * 0.011) : 0;
+        const halfW = (baseWidth * (0.4 + pts[i].pressure * 0.9)) * 0.5;
+
+        const left = curr.clone().addScaledVector(perp, halfW + jitter);
+        const right = curr.clone().addScaledVector(perp, -halfW + jitter);
+
+        positions.push(left.x, left.y, left.z, right.x, right.y, right.z);
+      }
+
+      const indices = [];
+      for (let i = 0; i < pts.length - 1; i++) {
+        const a = i * 2, b = i * 2 + 1, c = (i + 1) * 2, d = (i + 1) * 2 + 1;
+        indices.push(a, b, c, b, d, c);
+      }
+
+      const ribbonGeo = new THREE.BufferGeometry();
+      ribbonGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      ribbonGeo.setIndex(indices);
+
+      const ribbonMat = new THREE.MeshBasicMaterial({
+        color: colorVal,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: isPencil ? 0.74 : 0.96
+      });
+      group.add(new THREE.Mesh(ribbonGeo, ribbonMat));
+
+      // 2. Hebras de grafito deterministas (para que no parpadeen al borrar partes)
+      const strandCount = isPencil ? 3 : 1;
+      const spread = isPencil ? 0.035 : 0.01;
+      for (let s = 0; s < strandCount; s++) {
+        const strandPts = [];
+        for (let i = 0; i < pts.length; i++) {
+          const p = pts[i];
+          const hash = Math.sin((i + 1) * 12.9898 + (s + 1) * 78.233) * 43758.5453;
+          const rand = (hash - Math.floor(hash)) - 0.5;
+          strandPts.push(new THREE.Vector3(
+            p.x + rand * spread,
+            p.y + Math.cos(i * 1.3 + s) * spread * 0.4,
+            p.z + Math.sin(i * 1.7 - s) * spread * 0.5
+          ));
+        }
+        const lineGeo = new THREE.BufferGeometry().setFromPoints(strandPts);
+        const lineMat = new THREE.LineBasicMaterial({
+          color: colorVal,
+          transparent: true,
+          opacity: isPencil ? 0.36 : 0.45
+        });
+        group.add(new THREE.Line(lineGeo, lineMat));
+      }
+
+      return group;
+    }
+
+    function rebuildAllMeshesFromData(parsedArray) {
+      strokesData.forEach(s => { if (s.mesh) scene.remove(s.mesh); });
+      strokesData = [];
+      parsedArray.forEach(item => {
+        if (!item.points || item.points.length < 2) return;
+        const strokeObj = {
+          style: item.style || 'pencil',
+          color: item.color || '#e2e8f0',
+          normal: item.normal || { x: 0, y: 1, z: 0 },
+          points: item.points,
+          mesh: null
+        };
+        strokeObj.mesh = createStrokeMesh(strokeObj);
+        scene.add(strokeObj.mesh);
+        strokesData.push(strokeObj);
+      });
+    }
+
+    // --- LÁPIZ BORRADOR PARCIAL (CORTA SEGMENTOS DE LÍNEA BAJO EL PUNTERO) ---
+    const projVec = new THREE.Vector3();
+    function eraseAtScreenPoint(clientX, clientY) {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const rSq = eraserRadiusPx * eraserRadiusPx;
+      let anyModified = false;
+      const nextStrokes = [];
+
+      for (let sIdx = 0; sIdx < strokesData.length; sIdx++) {
+        const stroke = strokesData[sIdx];
+        const pts = stroke.points;
+        let strokeHit = false;
+        const keepFlags = new Array(pts.length).fill(true);
+
+        for (let i = 0; i < pts.length; i++) {
+          projVec.set(pts[i].x, pts[i].y, pts[i].z).project(camera);
+          if (projVec.z < -1 || projVec.z > 1) continue;
+          const sx = (projVec.x * 0.5 + 0.5) * width;
+          const sy = (-projVec.y * 0.5 + 0.5) * height;
+          const dx = sx - clientX;
+          const dy = sy - clientY;
+          if (dx * dx + dy * dy <= rSq) {
+            keepFlags[i] = false;
+            strokeHit = true;
+          }
+        }
+
+        if (!strokeHit) {
+          nextStrokes.push(stroke);
+        } else {
+          anyModified = true;
+          scene.remove(stroke.mesh);
+
+          // Dividir el trazo en sub-trazos continuos que sobrevivieron al borrador
+          let currentSegment = [];
+          for (let i = 0; i < pts.length; i++) {
+            if (keepFlags[i]) {
+              currentSegment.push(pts[i]);
+            } else {
+              if (currentSegment.length >= 2) {
+                const newPart = {
+                  style: stroke.style,
+                  color: stroke.color,
+                  normal: stroke.normal,
+                  points: currentSegment,
+                  mesh: null
+                };
+                newPart.mesh = createStrokeMesh(newPart);
+                scene.add(newPart.mesh);
+                nextStrokes.push(newPart);
+              }
+              currentSegment = [];
+            }
+          }
+          if (currentSegment.length >= 2) {
+            const newPart = {
+              style: stroke.style,
+              color: stroke.color,
+              normal: stroke.normal,
+              points: currentSegment,
+              mesh: null
+            };
+            newPart.mesh = createStrokeMesh(newPart);
+            scene.add(newPart.mesh);
+            nextStrokes.push(newPart);
+          }
+        }
+      }
+
+      if (anyModified) {
+        strokesData = nextStrokes;
+      }
+      return anyModified;
+    }
+
+    // --- EVENTOS DE DIBUJO Y BORRADO CON APPLE PENCIL ---
     const raycaster = new THREE.Raycaster();
-    let isDrawing = false;
-    let rawPoints = []; // [{ pos: Vector3, pressure: float }]
-    let currentPreviewGroup = null;
+    const eraserCursor = document.getElementById('eraser-cursor');
+    let isInteracting = false;
+    let didEraseSomething = false;
+    let rawPoints = [];
+    let livePreviewMesh = null;
     let activeTouches = 0;
 
     function get3DPoint(e) {
@@ -284,7 +760,6 @@
       if (!hit) return null;
 
       if (snapToGrid && straightMode) {
-        // En modo estructural recto, redondea a 0.25m para amarrar nodos fácilmente
         const step = 0.25;
         target.x = Math.round(target.x / step) * step;
         target.y = Math.round(target.y / step) * step;
@@ -293,197 +768,175 @@
       return target;
     }
 
-    // Genera una cinta 3D sensible a la presión + hebras de grafito desprolijas
-    function buildSketchyStroke(pointsData, style) {
-      const group = new THREE.Group();
-      if (pointsData.length < 2) return group;
-
-      const isPencil = (style === 'pencil');
-      const baseColor = isPencil ? 0xe2e8f0 : 0x38bdf8;
-      const baseWidth = isPencil ? 0.065 : 0.09;
-
-      // Si es modo línea recta, interpolamos puntos intermedios para aplicar vibración de mano alzada
-      let pts = [];
-      if (straightMode && pointsData.length >= 2) {
-        const start = pointsData[0];
-        const end = pointsData[pointsData.length - 1];
-        const dist = start.pos.distanceTo(end.pos);
-        const steps = Math.max(8, Math.floor(dist * 6));
-
-        // Pequeño "overshoot" arquitectónico (extensión de esquina clásica de croquis)
-        const dir = end.pos.clone().sub(start.pos).normalize();
-        const overshoot = isPencil ? 0.14 : 0.06;
-        const pStart = start.pos.clone().sub(dir.clone().multiplyScalar(overshoot));
-        const pEnd = end.pos.clone().add(dir.clone().multiplyScalar(overshoot));
-
-        for (let i = 0; i <= steps; i++) {
-          const t = i / steps;
-          const pos = new THREE.Vector3().lerpVectors(pStart, pEnd, t);
-          const press = THREE.MathUtils.lerp(start.pressure, end.pressure, t);
-          pts.push({ pos, pressure: press });
-        }
-      } else {
-        pts = pointsData;
+    function updateEraserCursor(clientX, clientY, visible) {
+      if (!visible) {
+        eraserCursor.style.display = 'none';
+        return;
       }
-
-      // 1. Cinta principal con grosor variable según la presión del Apple Pencil
-      const positions = [];
-      const planeNormal = mathPlane.normal.clone();
-
-      for (let i = 0; i < pts.length; i++) {
-        const curr = pts[i].pos;
-        const next = (i < pts.length - 1) ? pts[i + 1].pos : curr;
-        const prev = (i > 0) ? pts[i - 1].pos : curr;
-
-        let tangent = next.clone().sub(prev);
-        if (tangent.lengthSq() < 0.00001) tangent.set(1, 0, 0);
-        tangent.normalize();
-
-        const perp = new THREE.Vector3().crossVectors(tangent, planeNormal).normalize();
-        // Vibración orgánica de mano alzada
-        const jitter = isPencil ? (Math.sin(i * 1.7) * 0.012) : 0;
-        const halfW = (baseWidth * (0.4 + pts[i].pressure * 0.9)) * 0.5;
-
-        const left = curr.clone().addScaledVector(perp, halfW + jitter);
-        const right = curr.clone().addScaledVector(perp, -halfW + jitter);
-
-        positions.push(left.x, left.y, left.z);
-        positions.push(right.x, right.y, right.z);
-      }
-
-      const indices = [];
-      for (let i = 0; i < pts.length - 1; i++) {
-        const a = i * 2;
-        const b = i * 2 + 1;
-        const c = (i + 1) * 2;
-        const d = (i + 1) * 2 + 1;
-        indices.push(a, b, c, b, d, c);
-      }
-
-      const ribbonGeo = new THREE.BufferGeometry();
-      ribbonGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-      ribbonGeo.setIndex(indices);
-
-      const ribbonMat = new THREE.MeshBasicMaterial({
-        color: baseColor,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: isPencil ? 0.72 : 0.95
-      });
-      group.add(new THREE.Mesh(ribbonGeo, ribbonMat));
-
-      // 2. Hebras secundarias de grafito para darle textura de "boceto a lápiz"
-      const strandCount = isPencil ? 3 : 1;
-      for (let s = 0; s < strandCount; s++) {
-        const strandPts = [];
-        const spread = isPencil ? 0.038 : 0.012;
-        for (let i = 0; i < pts.length; i++) {
-          const p = pts[i].pos;
-          const ox = (Math.random() - 0.5) * spread;
-          const oy = (Math.random() - 0.5) * spread;
-          const oz = (Math.random() - 0.5) * spread;
-          strandPts.push(new THREE.Vector3(p.x + ox, p.y + oy, p.z + oz));
-        }
-        const lineGeo = new THREE.BufferGeometry().setFromPoints(strandPts);
-        const lineMat = new THREE.LineBasicMaterial({
-          color: baseColor,
-          transparent: true,
-          opacity: isPencil ? 0.38 : 0.5
-        });
-        group.add(new THREE.Line(lineGeo, lineMat));
-      }
-
-      return group;
+      eraserCursor.style.display = 'block';
+      eraserCursor.style.width = (eraserRadiusPx * 2) + 'px';
+      eraserCursor.style.height = (eraserRadiusPx * 2) + 'px';
+      eraserCursor.style.left = clientX + 'px';
+      eraserCursor.style.top = clientY + 'px';
     }
 
-    // --- EVENTOS DE PUNTERO (APPLE PENCIL + MULTITOUCH) ---
     renderer.domElement.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'touch') activeTouches++;
 
-      // Si hay 2 dedos en pantalla o el modo es Orbitar (y no es el Apple Pencil), rotamos cámara
       const isPen = (e.pointerType === 'pen');
       if (activeTouches >= 2 || (tool === 'orbit' && !isPen)) {
-        isDrawing = false;
-        if (currentPreviewGroup) {
-          scene.remove(currentPreviewGroup);
-          currentPreviewGroup = null;
+        isInteracting = false;
+        updateEraserCursor(0, 0, false);
+        if (livePreviewMesh) {
+          scene.remove(livePreviewMesh);
+          livePreviewMesh = null;
         }
         controls.enabled = true;
         return;
       }
 
-      // Iniciar dibujo con Apple Pencil o 1 dedo
       controls.enabled = false;
+      isInteracting = true;
+
+      if (tool === 'eraser') {
+        pushUndoState();
+        didEraseSomething = eraseAtScreenPoint(e.clientX, e.clientY);
+        updateEraserCursor(e.clientX, e.clientY, true);
+        return;
+      }
+
       const pt = get3DPoint(e);
       if (!pt) return;
-
-      isDrawing = true;
-      const pressure = (e.pointerType === 'pen' && e.pressure > 0) ? e.pressure : 0.55;
-      rawPoints = [{ pos: pt, pressure }];
+      const pressure = (isPen && e.pressure > 0) ? e.pressure : 0.55;
+      rawPoints = [{ x: pt.x, y: pt.y, z: pt.z, pressure }];
     });
 
     renderer.domElement.addEventListener('pointermove', (e) => {
-      if (!isDrawing) return;
+      if (!isInteracting) return;
       if (e.pointerType === 'touch' && activeTouches >= 2) return;
+
+      if (tool === 'eraser') {
+        updateEraserCursor(e.clientX, e.clientY, true);
+        if (eraseAtScreenPoint(e.clientX, e.clientY)) {
+          didEraseSomething = true;
+        }
+        return;
+      }
 
       const pt = get3DPoint(e);
       if (!pt) return;
-
       const pressure = (e.pointerType === 'pen' && e.pressure > 0) ? e.pressure : 0.55;
 
       if (straightMode) {
-        rawPoints = [rawPoints[0], { pos: pt, pressure }];
+        rawPoints = [rawPoints[0], { x: pt.x, y: pt.y, z: pt.z, pressure }];
       } else {
-        const lastPt = rawPoints[rawPoints.length - 1].pos;
-        if (lastPt.distanceTo(pt) > 0.06) {
-          rawPoints.push({ pos: pt, pressure });
+        const last = rawPoints[rawPoints.length - 1];
+        const distSq = (last.x - pt.x)**2 + (last.y - pt.y)**2 + (last.z - pt.z)**2;
+        if (distSq > 0.0025) {
+          rawPoints.push({ x: pt.x, y: pt.y, z: pt.z, pressure });
         }
       }
 
-      if (currentPreviewGroup) scene.remove(currentPreviewGroup);
-      const activeStyle = (tool === 'pen') ? 'pen' : 'pencil';
-      currentPreviewGroup = buildSketchyStroke(rawPoints, activeStyle);
-      scene.add(currentPreviewGroup);
+      if (livePreviewMesh) scene.remove(livePreviewMesh);
+      const isPencil = (tool !== 'pen');
+      const densePts = densifyPoints(rawPoints, straightMode, isPencil);
+      const previewObj = {
+        style: isPencil ? 'pencil' : 'pen',
+        color: currentColor,
+        normal: { x: mathPlane.normal.x, y: mathPlane.normal.y, z: mathPlane.normal.z },
+        points: densePts
+      };
+      livePreviewMesh = createStrokeMesh(previewObj);
+      scene.add(livePreviewMesh);
     });
 
-    function finishStroke(e) {
+    function endInteraction(e) {
       if (e.pointerType === 'touch') {
         activeTouches = Math.max(0, activeTouches - 1);
       }
-      if (isDrawing) {
-        isDrawing = false;
-        if (currentPreviewGroup && rawPoints.length >= 2) {
-          strokesHistory.push(currentPreviewGroup);
-          currentPreviewGroup = null;
+      updateEraserCursor(0, 0, false);
+
+      if (isInteracting) {
+        isInteracting = false;
+
+        if (tool === 'eraser') {
+          if (didEraseSomething) autoSaveLocal();
+          didEraseSomething = false;
+        } else if (livePreviewMesh && rawPoints.length >= 2) {
+          pushUndoState();
+          const isPencil = (tool !== 'pen');
+          const densePts = densifyPoints(rawPoints, straightMode, isPencil);
+          const finalStroke = {
+            style: isPencil ? 'pencil' : 'pen',
+            color: currentColor,
+            normal: { x: mathPlane.normal.x, y: mathPlane.normal.y, z: mathPlane.normal.z },
+            points: densePts,
+            mesh: livePreviewMesh
+          };
+          strokesData.push(finalStroke);
+          livePreviewMesh = null;
+          autoSaveLocal();
         }
         rawPoints = [];
       }
-      // Reactivar controles de órbita para gestos de 2 dedos
       controls.enabled = true;
     }
 
-    renderer.domElement.addEventListener('pointerup', finishStroke);
-    renderer.domElement.addEventListener('pointercancel', finishStroke);
+    renderer.domElement.addEventListener('pointerup', endInteraction);
+    renderer.domElement.addEventListener('pointercancel', endInteraction);
 
-    // --- BOTONES DE INTERFAZ ---
+    // --- BOTONES DE HERRAMIENTAS Y COLORES ---
     const btnPencil = document.getElementById('btn-pencil');
     const btnPen = document.getElementById('btn-pen');
+    const btnEraser = document.getElementById('btn-eraser');
     const btnOrbit = document.getElementById('btn-orbit');
-    const btnStraight = document.getElementById('btn-straight');
-    const btnSnap = document.getElementById('btn-snap');
-    const btnUndo = document.getElementById('btn-undo');
-    const btnClear = document.getElementById('btn-clear');
+    const eraserSizeBox = document.getElementById('eraser-size-box');
+    const eraserSlider = document.getElementById('eraser-slider');
+    const eraserLbl = document.getElementById('eraser-lbl');
 
-    function setTool(selectedTool) {
-      tool = selectedTool;
+    function setTool(selected) {
+      tool = selected;
       btnPencil.classList.toggle('active', tool === 'pencil');
       btnPen.classList.toggle('active', tool === 'pen');
+      btnEraser.classList.toggle('active', tool === 'eraser');
       btnOrbit.classList.toggle('active', tool === 'orbit');
+      eraserSizeBox.classList.toggle('visible', tool === 'eraser');
     }
 
     btnPencil.addEventListener('click', () => setTool('pencil'));
     btnPen.addEventListener('click', () => setTool('pen'));
+    btnEraser.addEventListener('click', () => setTool('eraser'));
     btnOrbit.addEventListener('click', () => setTool('orbit'));
+
+    eraserSlider.addEventListener('input', (e) => {
+      eraserRadiusPx = parseInt(e.target.value, 10);
+      eraserLbl.textContent = eraserRadiusPx + ' px';
+    });
+
+    // Selección de Color
+    const swatches = document.querySelectorAll('.color-swatch');
+    const customColorInput = document.getElementById('custom-color');
+
+    swatches.forEach(btn => {
+      btn.addEventListener('click', () => {
+        swatches.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentColor = btn.getAttribute('data-color');
+        if (tool === 'eraser' || tool === 'orbit') setTool('pencil');
+      });
+    });
+
+    customColorInput.addEventListener('input', (e) => {
+      swatches.forEach(b => b.classList.remove('active'));
+      currentColor = e.target.value;
+      if (tool === 'eraser' || tool === 'orbit') setTool('pencil');
+    });
+
+    // Asistencia y Edición
+    const btnStraight = document.getElementById('btn-straight');
+    const btnSnap = document.getElementById('btn-snap');
+    const btnUndo = document.getElementById('btn-undo');
+    const btnClear = document.getElementById('btn-clear');
 
     btnStraight.addEventListener('click', () => {
       straightMode = !straightMode;
@@ -496,20 +949,49 @@
     });
 
     btnUndo.addEventListener('click', () => {
-      const last = strokesHistory.pop();
-      if (last) scene.remove(last);
+      if (undoStack.length === 0) return;
+      const prevJson = undoStack.pop();
+      rebuildAllMeshesFromData(JSON.parse(prevJson));
+      autoSaveLocal();
     });
 
     btnClear.addEventListener('click', () => {
-      strokesHistory.forEach(s => scene.remove(s));
-      strokesHistory.length = 0;
+      if (strokesData.length === 0) return;
+      pushUndoState();
+      rebuildAllMeshesFromData([]);
+      autoSaveLocal();
     });
 
-    // --- CONTROLES DEL PLANO ESTRUCTURAL 3D ---
+    // --- MODO CLARO / OSCURO ---
+    const btnTheme = document.getElementById('btn-theme');
+    btnTheme.addEventListener('click', () => {
+      isLightMode = !isLightMode;
+      document.body.classList.toggle('light-mode', isLightMode);
+      btnTheme.textContent = isLightMode ? '🌙 Oscuro' : '☀️ Claro';
+
+      scene.background = new THREE.Color(isLightMode ? 0xf4f1ea : 0x141619);
+
+      scene.remove(floorGrid);
+      floorGrid = new THREE.GridHelper(
+        24, 24,
+        isLightMode ? 0x2563eb : 0x3b82f6,
+        isLightMode ? 0xd6d3cd : 0x262930
+      );
+      scene.add(floorGrid);
+
+      // Si el usuario tenía el color blanco por defecto al pasar a modo claro, sugerimos grafito oscuro
+      if (isLightMode && currentColor === '#e2e8f0') {
+        swatches[1].click();
+      } else if (!isLightMode && currentColor === '#1e293b') {
+        swatches[0].click();
+      }
+    });
+
+    // --- PLANOS ESTRUCTURALES 3D ---
     const plXZ = document.getElementById('pl-xz');
     const plXY = document.getElementById('pl-xy');
     const plYZ = document.getElementById('pl-yz');
-    const slider = document.getElementById('plane-slider');
+    const planeSlider = document.getElementById('plane-slider');
     const planeVal = document.getElementById('plane-val');
 
     function selectPlane(type) {
@@ -524,10 +1006,154 @@
     plXY.addEventListener('click', () => selectPlane('XY'));
     plYZ.addEventListener('click', () => selectPlane('YZ'));
 
-    slider.addEventListener('input', (e) => {
+    planeSlider.addEventListener('input', (e) => {
       planeOffset = parseFloat(e.target.value);
       planeVal.textContent = planeOffset.toFixed(1) + ' m';
       updateWorkingPlane();
+    });
+
+    // --- SISTEMA DE GUARDADO DE PROYECTOS (LOCALSTORAGE + ARCHIVOS JSON + PNG) ---
+    const modalOverlay = document.getElementById('modal-overlay');
+    const btnProjects = document.getElementById('btn-projects');
+    const btnCloseModal = document.getElementById('btn-close-modal');
+    const btnSaveProject = document.getElementById('btn-save-project');
+    const projectNameInput = document.getElementById('project-name-input');
+    const projectListEl = document.getElementById('project-list');
+    const btnExportJson = document.getElementById('btn-export-json');
+    const btnImportJson = document.getElementById('btn-import-json');
+    const btnExportPng = document.getElementById('btn-export-png');
+    const fileInput = document.getElementById('file-input');
+
+    const STORAGE_KEY = 'croquis3d_saved_projects';
+
+    function getSavedProjects() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function renderProjectList() {
+      const projects = getSavedProjects();
+      const names = Object.keys(projects);
+      projectListEl.innerHTML = '';
+
+      if (names.length === 0) {
+        projectListEl.innerHTML = '<div style="color:var(--text-muted);font-size:12px;padding:6px;">Aún no tienes proyectos guardados con nombre.</div>';
+        return;
+      }
+
+      names.forEach(name => {
+        const item = document.createElement('div');
+        item.className = 'project-item';
+        const info = document.createElement('div');
+        info.innerHTML = `<strong>${name}</strong><br><span style="font-size:11px;color:var(--text-muted);">${projects[name].date || ''}</span>`;
+
+        const actions = document.createElement('div');
+        actions.className = 'project-actions';
+
+        const loadBtn = document.createElement('button');
+        loadBtn.textContent = 'Abrir';
+        loadBtn.className = 'active';
+        loadBtn.style.padding = '6px 10px';
+        loadBtn.onclick = () => {
+          pushUndoState();
+          rebuildAllMeshesFromData(projects[name].strokes || []);
+          autoSaveLocal();
+          modalOverlay.classList.remove('open');
+        };
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '🗑️';
+        delBtn.className = 'danger';
+        delBtn.style.padding = '6px 9px';
+        delBtn.onclick = () => {
+          const all = getSavedProjects();
+          delete all[name];
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+          renderProjectList();
+        };
+
+        actions.appendChild(loadBtn);
+        actions.appendChild(delBtn);
+        item.appendChild(info);
+        item.appendChild(actions);
+        projectListEl.appendChild(item);
+      });
+    }
+
+    btnProjects.addEventListener('click', () => {
+      renderProjectList();
+      modalOverlay.classList.add('open');
+    });
+
+    btnCloseModal.addEventListener('click', () => {
+      modalOverlay.classList.remove('open');
+    });
+
+    btnSaveProject.addEventListener('click', () => {
+      const name = projectNameInput.value.trim() || ('Croquis ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+      const all = getSavedProjects();
+      all[name] = {
+        date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+        strokes: JSON.parse(serializeStrokes())
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+      projectNameInput.value = '';
+      renderProjectList();
+    });
+
+    // Descargar como archivo .json a Archivos del iPad
+    btnExportJson.addEventListener('click', () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(serializeStrokes());
+      const a = document.createElement('a');
+      a.setAttribute("href", dataStr);
+      a.setAttribute("download", "proyecto_croquis3d.json");
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+
+    // Importar archivo .json
+    btnImportJson.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const parsed = JSON.parse(ev.target.result);
+          pushUndoState();
+          rebuildAllMeshesFromData(parsed);
+          autoSaveLocal();
+          modalOverlay.classList.remove('open');
+        } catch (err) {
+          alert('El archivo no tiene un formato válido.');
+        }
+      };
+      reader.readAsText(file);
+      fileInput.value = '';
+    });
+
+    // Exportar captura PNG
+    btnExportPng.addEventListener('click', () => {
+      renderer.render(scene, camera);
+      const dataUrl = renderer.domElement.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = 'croquis_3d.png';
+      a.click();
+    });
+
+    // Restaurar autoguardado al abrir la app
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        const saved = localStorage.getItem('croquis3d_autosave');
+        if (saved) {
+          rebuildAllMeshesFromData(JSON.parse(saved));
+        }
+      } catch (e) {}
     });
 
     // --- LOOP DE RENDERIZADO Y RESIZE ---
