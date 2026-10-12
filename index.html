@@ -9,7 +9,7 @@
   <style>
     :root {
       --bg-canvas: #141619;
-      --bg-panel: rgba(28, 31, 36, 0.88);
+      --bg-panel: rgba(28, 31, 36, 0.90);
       --text-main: #e2e8f0;
       --text-muted: #94a3b8;
       --border-panel: rgba(255, 255, 255, 0.12);
@@ -19,7 +19,7 @@
     }
     body.light-mode {
       --bg-canvas: #f4f1ea;
-      --bg-panel: rgba(255, 255, 255, 0.90);
+      --bg-panel: rgba(255, 255, 255, 0.92);
       --text-main: #1e293b;
       --text-muted: #64748b;
       --border-panel: rgba(15, 23, 42, 0.12);
@@ -55,29 +55,29 @@
     /* Menú Lateral Izquierdo */
     #sidebar {
       position: absolute;
-      top: 16px;
-      left: 16px;
-      max-height: calc(100vh - 32px);
+      top: 14px;
+      left: 14px;
+      max-height: calc(100vh - 28px);
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
       background: var(--bg-panel);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      padding: 12px;
+      padding: 11px;
       border-radius: 16px;
       border: 1px solid var(--border-panel);
       box-shadow: var(--shadow-panel);
       z-index: 10;
-      width: 175px;
+      width: 184px;
     }
     .menu-label {
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.8px;
       color: var(--text-muted);
-      margin: 4px 0 2px 2px;
+      margin: 3px 0 1px 2px;
       font-weight: 700;
     }
     button {
@@ -85,15 +85,15 @@
       color: var(--text-main);
       border: 1px solid var(--btn-border);
       border-radius: 10px;
-      padding: 9px 11px;
-      font-size: 13px;
+      padding: 8px 10px;
+      font-size: 12.5px;
       font-weight: 600;
       text-align: left;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 7px;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all 0.12s ease;
     }
     button:active {
       transform: scale(0.97);
@@ -102,7 +102,7 @@
       background: #3b82f6;
       color: #ffffff;
       border-color: #60a5fa;
-      box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.35);
     }
     button.secondary-active {
       background: #10b981;
@@ -117,6 +117,31 @@
       height: 1px;
       background: var(--border-panel);
       margin: 3px 0;
+    }
+
+    /* Submenú de estilos de Hatch */
+    #hatch-options {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      padding: 6px;
+      background: rgba(59, 130, 246, 0.08);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+      border-radius: 10px;
+    }
+    #hatch-options.visible {
+      display: flex;
+    }
+    .hatch-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+    }
+    .hatch-style-btn {
+      padding: 6px 6px;
+      font-size: 11px;
+      justify-content: center;
+      text-align: center;
     }
 
     /* Paleta de Colores */
@@ -142,7 +167,7 @@
     }
     #custom-color {
       width: 100%;
-      height: 30px;
+      height: 28px;
       border: 1px solid var(--btn-border);
       border-radius: 8px;
       background: transparent;
@@ -150,12 +175,12 @@
       cursor: pointer;
     }
 
-    /* Controles deslizantes en menú lateral */
+    /* Controles deslizantes */
     .slider-box {
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      padding: 4px 2px;
+      gap: 3px;
+      padding: 3px 2px;
       font-size: 11px;
       color: var(--text-muted);
     }
@@ -169,13 +194,13 @@
     /* Panel Inferior para mover el Plano de Dibujo 3D */
     #plane-panel {
       position: absolute;
-      bottom: 20px;
+      bottom: 18px;
       left: 50%;
       transform: translateX(-50%);
       background: var(--bg-panel);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      padding: 10px 16px;
+      padding: 9px 15px;
       border-radius: 14px;
       border: 1px solid var(--border-panel);
       display: flex;
@@ -205,8 +230,8 @@
     /* Barra superior derecha */
     #top-right-bar {
       position: absolute;
-      top: 16px;
-      right: 16px;
+      top: 14px;
+      right: 14px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -258,12 +283,12 @@
       border: 1px solid var(--border-panel);
       border-radius: 18px;
       width: 92%;
-      max-width: 440px;
+      max-width: 450px;
       padding: 20px;
       box-shadow: var(--shadow-panel);
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
       max-height: 85vh;
     }
     .modal-header {
@@ -290,7 +315,7 @@
     }
     #project-list {
       overflow-y: auto;
-      max-height: 220px;
+      max-height: 210px;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -339,12 +364,37 @@
     <div class="menu-label">Herramienta</div>
     <button id="btn-pencil" class="active">✏️ Lápiz Boceto</button>
     <button id="btn-pen">✒️ Pluma Tinta</button>
+    <button id="btn-rect-hatch">🧱 Muro / Hatch</button>
+    <button id="btn-poly-hatch">▱ Polígono Hatch</button>
+
+    <!-- Opciones desplegables de Hatch -->
+    <div id="hatch-options">
+      <span style="font-size:10px; font-weight:700; color:var(--text-muted);">ESTILO DE RELLENO:</span>
+      <div class="hatch-grid">
+        <button class="hatch-style-btn active" data-hmode="diag">/// Diag</button>
+        <button class="hatch-style-btn" data-hmode="cross">XXX Cruz</button>
+        <button class="hatch-style-btn" data-hmode="mixed">▤ Mixto</button>
+        <button class="hatch-style-btn" data-hmode="solid">▓ Sólido</button>
+      </div>
+      <div class="slider-box">
+        <span>Separación: <b id="hatch-space-lbl">0.25 m</b></span>
+        <input type="range" id="hatch-space-slider" min="0.12" max="0.60" step="0.04" value="0.25" style="width:100%;">
+      </div>
+    </div>
+
     <button id="btn-eraser">🧹 Borrador Lápiz</button>
     <div id="eraser-size-box" class="slider-box">
-      <span>Tamaño borrador: <b id="eraser-lbl">22 px</b></span>
+      <span>Radio borrador: <b id="eraser-lbl">22 px</b></span>
       <input type="range" id="eraser-slider" min="10" max="55" step="2" value="22" style="width:100%;">
     </div>
+
     <button id="btn-orbit">🔄 Rotar Cámara</button>
+
+    <!-- Grosor de Lápiz / Pluma -->
+    <div id="stroke-size-box" class="slider-box">
+      <span>Grosor Trazo: <b id="stroke-size-lbl">1.0x</b></span>
+      <input type="range" id="stroke-size-slider" min="0.4" max="3.5" step="0.2" value="1.0" style="width:100%;">
+    </div>
 
     <div class="divider"></div>
     <div class="menu-label">Color de Línea</div>
@@ -391,6 +441,11 @@
       <div class="modal-header">
         <span>💾 Mis Proyectos en este iPad</span>
         <button id="btn-close-modal" style="padding:6px 10px;">✕</button>
+      </div>
+
+      <div style="font-size:12px; color:var(--text-muted); display:flex; justify-content:space-between;">
+        <span>Dibujo actual en escena:</span>
+        <b id="current-weight-lbl" style="color:#10b981;">Ligero ⚡</b>
       </div>
 
       <div class="save-row">
@@ -486,97 +541,132 @@
     }
     updateWorkingPlane();
 
-    // --- ESTADO GLOBAL Y DATOS DE TRAZOS ---
-    let tool = 'pencil'; // 'pencil' | 'pen' | 'eraser' | 'orbit'
+    // --- ESTADO GLOBAL Y OPCIONES ---
+    let tool = 'pencil'; // 'pencil' | 'pen' | 'rect-hatch' | 'poly-hatch' | 'eraser' | 'orbit'
     let currentColor = '#e2e8f0';
+    let currentStrokeSize = 1.0;
+    let hatchMode = 'diag'; // 'diag' | 'cross' | 'mixed' | 'solid'
+    let hatchSpacing = 0.25;
     let straightMode = false;
     let snapToGrid = true;
     let eraserRadiusPx = 22;
 
+    // Lista de objetos en escena (trazos y rellenos)
     let strokesData = [];
+    // Pila de deshacer ultrarrápida en memoria (guarda referencias sin congelar el iPad)
     const undoStack = [];
-    const MAX_UNDO = 25;
+    const MAX_UNDO = 30;
 
+    const round2 = (n) => Math.round(n * 100) / 100;
+
+    // Simplifica puntos colineales o demasiado pegados para que el archivo pese 95% menos
+    function simplifyPoints(pts) {
+      if (!pts || pts.length <= 2) return pts;
+      const out = [pts[0]];
+      for (let i = 1; i < pts.length - 1; i++) {
+        const prev = out[out.length - 1];
+        const curr = pts[i];
+        const next = pts[i + 1];
+
+        const dx1 = curr.x - prev.x, dy1 = curr.y - prev.y, dz1 = curr.z - prev.z;
+        const len1Sq = dx1*dx1 + dy1*dy1 + dz1*dz1;
+        if (len1Sq < 0.0025) continue; // Ignorar puntos a menos de 5cm
+
+        const dx2 = next.x - curr.x, dy2 = next.y - curr.y, dz2 = next.z - curr.z;
+        const len2Sq = dx2*dx2 + dy2*dy2 + dz2*dz2;
+        if (len2Sq > 0.00001) {
+          // Producto cruz para ver si van en la misma línea recta
+          const cx = dy1 * dz2 - dz1 * dy2;
+          const cy = dz1 * dx2 - dx1 * dz2;
+          const cz = dx1 * dy2 - dy1 * dx2;
+          const areaSq = cx*cx + cy*cy + cz*cz;
+          if (areaSq / (len1Sq * len2Sq) < 0.0015) {
+            continue; // Es colineal, no hace falta guardarlo
+          }
+        }
+        out.push(curr);
+      }
+      out.push(pts[pts.length - 1]);
+      return out;
+    }
+
+    // Serialización compacta (guarda coordenadas con 2 decimales en arreglos cortos)
     function serializeStrokes() {
-      return JSON.stringify(strokesData.map(s => ({
-        style: s.style,
-        color: s.color,
-        normal: s.normal,
-        points: s.points
-      })));
+      const compact = strokesData.map(s => {
+        if (s.type === 'fill') {
+          return {
+            t: 'f',
+            c: s.color,
+            pt: s.planeType,
+            po: round2(s.planeOffset),
+            p2: s.poly2D.map(uv => [round2(uv[0]), round2(uv[1])])
+          };
+        }
+        const simplified = simplifyPoints(s.points);
+        return {
+          s: s.style === 'pen' ? 1 : 0,
+          c: s.color,
+          sz: round2(s.size || 1),
+          n: [round2(s.normal.x), round2(s.normal.y), round2(s.normal.z)],
+          p: simplified.map(pt => [round2(pt.x), round2(pt.y), round2(pt.z), round2(pt.pressure || 0.55)])
+        };
+      });
+      return JSON.stringify(compact);
     }
 
     function pushUndoState() {
-      const snap = serializeStrokes();
-      if (undoStack.length === 0 || undoStack[undoStack.length - 1] !== snap) {
-        undoStack.push(snap);
-        if (undoStack.length > MAX_UNDO) undoStack.shift();
-      }
+      undoStack.push([...strokesData]);
+      if (undoStack.length > MAX_UNDO) undoStack.shift();
     }
 
+    let saveTimeout = null;
     function autoSaveLocal() {
-      try {
-        localStorage.setItem('croquis3d_autosave', serializeStrokes());
-      } catch (err) {}
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        try {
+          localStorage.setItem('croquis3d_autosave', serializeStrokes());
+        } catch (err) {}
+      }, 350);
     }
 
-    // --- CONSTRUCCIÓN VISUAL DEL TRAZO (LÁPIZ / PLUMA) ---
-    function densifyPoints(rawPts, isStraight, isPencil) {
-      if (rawPts.length < 2) return [];
+    // --- CONSTRUCCIÓN VISUAL DEL TRAZO (LÁPIZ / PLUMA CON GROSOR AJUSTABLE) ---
+    function interpolateForVisuals(rawPts, isPencil) {
+      if (!rawPts || rawPts.length < 2) return [];
       const result = [];
-      const maxStep = 0.08;
+      const visualStep = isPencil ? 0.22 : 0.35;
 
-      let sourcePts = rawPts;
-      if (isStraight) {
-        const start = rawPts[0];
-        const end = rawPts[rawPts.length - 1];
-        const sVec = new THREE.Vector3(start.x, start.y, start.z);
-        const eVec = new THREE.Vector3(end.x, end.y, end.z);
-        const dir = eVec.clone().sub(sVec);
-        if (dir.lengthSq() < 0.0001) return [];
-        dir.normalize();
-
-        const overshoot = isPencil ? 0.10 : 0.04;
-        const pStart = sVec.clone().sub(dir.clone().multiplyScalar(overshoot));
-        const pEnd = eVec.clone().add(dir.clone().multiplyScalar(overshoot));
-
-        sourcePts = [
-          { x: pStart.x, y: pStart.y, z: pStart.z, pressure: start.pressure },
-          { x: pEnd.x, y: pEnd.y, z: pEnd.z, pressure: end.pressure }
-        ];
-      }
-
-      for (let i = 0; i < sourcePts.length - 1; i++) {
-        const a = sourcePts[i];
-        const b = sourcePts[i + 1];
-        const va = new THREE.Vector3(a.x, a.y, a.z);
-        const vb = new THREE.Vector3(b.x, b.y, b.z);
-        const dist = va.distanceTo(vb);
-        const steps = Math.max(1, Math.ceil(dist / maxStep));
+      for (let i = 0; i < rawPts.length - 1; i++) {
+        const a = rawPts[i];
+        const b = rawPts[i + 1];
+        const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
+        const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+        const steps = Math.max(1, Math.min(80, Math.ceil(dist / visualStep)));
 
         for (let s = 0; s < steps; s++) {
           const t = s / steps;
           result.push({
-            x: THREE.MathUtils.lerp(a.x, b.x, t),
-            y: THREE.MathUtils.lerp(a.y, b.y, t),
-            z: THREE.MathUtils.lerp(a.z, b.z, t),
-            pressure: THREE.MathUtils.lerp(a.pressure, b.pressure, t)
+            x: a.x + dx * t,
+            y: a.y + dy * t,
+            z: a.z + dz * t,
+            pressure: THREE.MathUtils.lerp(a.pressure || 0.55, b.pressure || 0.55, t)
           });
         }
       }
-      const last = sourcePts[sourcePts.length - 1];
-      result.push({ x: last.x, y: last.y, z: last.z, pressure: last.pressure });
+      const last = rawPts[rawPts.length - 1];
+      result.push({ x: last.x, y: last.y, z: last.z, pressure: last.pressure || 0.55 });
       return result;
     }
 
     function createStrokeMesh(strokeObj) {
-      const pts = strokeObj.points;
       const group = new THREE.Group();
-      if (!pts || pts.length < 2) return group;
+      const rawPts = strokeObj.points;
+      if (!rawPts || rawPts.length < 2) return group;
 
-      const isPencil = (strokeObj.style === 'pencil');
+      const isPencil = (strokeObj.style !== 'pen');
+      const pts = interpolateForVisuals(rawPts, isPencil);
       const colorVal = new THREE.Color(strokeObj.color || '#e2e8f0');
-      const baseWidth = isPencil ? 0.065 : 0.095;
+      const sizeMult = strokeObj.size || 1.0;
+      const baseWidth = (isPencil ? 0.062 : 0.088) * sizeMult;
       const planeNormal = new THREE.Vector3(
         strokeObj.normal.x,
         strokeObj.normal.y,
@@ -597,7 +687,7 @@
         if (perp.lengthSq() < 0.0001) perp.set(0, 1, 0);
         perp.normalize();
 
-        const jitter = isPencil ? (Math.sin(i * 1.9) * 0.011) : 0;
+        const jitter = isPencil ? (Math.sin(i * 1.9) * 0.009 * Math.min(1.4, sizeMult)) : 0;
         const halfW = (baseWidth * (0.4 + pts[i].pressure * 0.9)) * 0.5;
 
         const left = curr.clone().addScaledVector(perp, halfW + jitter);
@@ -620,12 +710,13 @@
         color: colorVal,
         side: THREE.DoubleSide,
         transparent: true,
-        opacity: isPencil ? 0.74 : 0.96
+        opacity: isPencil ? 0.76 : 0.96
       });
       group.add(new THREE.Mesh(ribbonGeo, ribbonMat));
 
-      const strandCount = isPencil ? 3 : 1;
-      const spread = isPencil ? 0.035 : 0.01;
+      // Hebras secundarias ligeras de grafito
+      const strandCount = isPencil ? 2 : 1;
+      const spread = (isPencil ? 0.032 : 0.008) * Math.min(1.5, sizeMult);
       for (let s = 0; s < strandCount; s++) {
         const strandPts = [];
         for (let i = 0; i < pts.length; i++) {
@@ -642,7 +733,7 @@
         const lineMat = new THREE.LineBasicMaterial({
           color: colorVal,
           transparent: true,
-          opacity: isPencil ? 0.36 : 0.45
+          opacity: isPencil ? 0.35 : 0.45
         });
         group.add(new THREE.Line(lineGeo, lineMat));
       }
@@ -650,16 +741,222 @@
       return group;
     }
 
+    // --- CONVERSIÓN 2D <-> 3D EN EL PLANO ACTIVO Y GENERADOR DE HATCH ---
+    function toPlane2D(vec3, pType) {
+      if (pType === 'XZ') return [vec3.x, vec3.z];
+      if (pType === 'XY') return [vec3.x, vec3.y];
+      return [vec3.z, vec3.y]; // 'YZ'
+    }
+
+    function fromPlane2D(u, v, pType, offset) {
+      if (pType === 'XZ') return new THREE.Vector3(u, offset, v);
+      if (pType === 'XY') return new THREE.Vector3(u, v, offset);
+      return new THREE.Vector3(offset, v, u); // 'YZ'
+    }
+
+    function getPlaneNormalObj(pType) {
+      if (pType === 'XZ') return { x: 0, y: 1, z: 0 };
+      if (pType === 'XY') return { x: 0, y: 0, z: 1 };
+      return { x: 1, y: 0, z: 0 };
+    }
+
+    function createFillMesh(fillObj) {
+      const poly = fillObj.poly2D;
+      if (!poly || poly.length < 3) return new THREE.Group();
+      const shape = new THREE.Shape();
+      shape.moveTo(poly[0][0], poly[0][1]);
+      for (let i = 1; i < poly.length; i++) {
+        shape.lineTo(poly[i][0], poly[i][1]);
+      }
+      shape.closePath();
+
+      const geom = new THREE.ShapeGeometry(shape);
+      const posAttr = geom.attributes.position;
+      for (let i = 0; i < posAttr.count; i++) {
+        const u = posAttr.getX(i);
+        const v = posAttr.getY(i);
+        const p3 = fromPlane2D(u, v, fillObj.planeType, fillObj.planeOffset);
+        posAttr.setXYZ(i, p3.x, p3.y, p3.z);
+      }
+      posAttr.needsUpdate = true;
+      geom.computeVertexNormals();
+
+      const mat = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(fillObj.color || '#e2e8f0'),
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0.22,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: 1,
+        polygonOffsetUnits: 1
+      });
+      const group = new THREE.Group();
+      group.add(new THREE.Mesh(geom, mat));
+      return group;
+    }
+
+    // Recorta líneas diagonales a +45° o -45° dentro de cualquier polígono 2D
+    function computeHatchSegments2D(poly2D, spacing, angleRad) {
+      if (poly2D.length < 3) return [];
+      const cosA = Math.cos(-angleRad);
+      const sinA = Math.sin(-angleRad);
+      const cosInv = Math.cos(angleRad);
+      const sinInv = Math.sin(angleRad);
+
+      const rotPoly = poly2D.map(([u, v]) => [
+        u * cosA - v * sinA,
+        u * sinA + v * cosA
+      ]);
+
+      let minV = Infinity, maxV = -Infinity;
+      for (let i = 0; i < rotPoly.length; i++) {
+        if (rotPoly[i][1] < minV) minV = rotPoly[i][1];
+        if (rotPoly[i][1] > maxV) maxV = rotPoly[i][1];
+      }
+
+      const segments = [];
+      const startY = Math.ceil(minV / spacing) * spacing;
+      for (let y = startY; y <= maxV; y += spacing) {
+        const xHits = [];
+        for (let i = 0; i < rotPoly.length; i++) {
+          const p1 = rotPoly[i];
+          const p2 = rotPoly[(i + 1) % rotPoly.length];
+          if ((p1[1] <= y && p2[1] > y) || (p2[1] <= y && p1[1] > y)) {
+            const t = (y - p1[1]) / (p2[1] - p1[1]);
+            xHits.push(p1[0] + t * (p2[0] - p1[0]));
+          }
+        }
+        xHits.sort((a, b) => a - b);
+        for (let k = 0; k + 1 < xHits.length; k += 2) {
+          const x1 = xHits[k], x2 = xHits[k + 1];
+          if (Math.abs(x2 - x1) < 0.03) continue;
+          const u1 = x1 * cosInv - y * sinInv;
+          const v1 = x1 * sinInv + y * cosInv;
+          const u2 = x2 * cosInv - y * sinInv;
+          const v2 = x2 * sinInv + y * cosInv;
+          segments.push([[u1, v1], [u2, v2]]);
+        }
+      }
+      return segments;
+    }
+
+    // Construye todos los elementos de un Muro/Polígono con Hatch
+    function buildHatchElements(poly2D, pType, pOffset, hMode, spacing, color, size) {
+      const elements = [];
+      if (poly2D.length < 3) return elements;
+      const normal = getPlaneNormalObj(pType);
+
+      // 1. Si es Mixto o Sólido, agregamos el paño de relleno translúcido
+      if (hMode === 'mixed' || hMode === 'solid') {
+        elements.push({
+          type: 'fill',
+          color,
+          planeType: pType,
+          planeOffset: pOffset,
+          poly2D: poly2D.map(uv => [...uv])
+        });
+      }
+
+      // 2. Contorno perimetral estilo boceto (cada lado con su ligero overshoot)
+      for (let i = 0; i < poly2D.length; i++) {
+        const a2 = poly2D[i];
+        const b2 = poly2D[(i + 1) % poly2D.length];
+        const va = fromPlane2D(a2[0], a2[1], pType, pOffset);
+        const vb = fromPlane2D(b2[0], b2[1], pType, pOffset);
+        const dir = vb.clone().sub(va);
+        if (dir.lengthSq() < 0.0004) continue;
+        dir.normalize();
+        const over = 0.07;
+        const pStart = va.clone().sub(dir.clone().multiplyScalar(over));
+        const pEnd = vb.clone().add(dir.clone().multiplyScalar(over));
+
+        elements.push({
+          type: 'stroke',
+          style: 'pencil',
+          color,
+          size: size,
+          normal,
+          points: [
+            { x: pStart.x, y: pStart.y, z: pStart.z, pressure: 0.65 },
+            { x: pEnd.x, y: pEnd.y, z: pEnd.z, pressure: 0.65 }
+          ]
+        });
+      }
+
+      // 3. Líneas interiores de Hatch (si es diag, cross o mixed)
+      if (hMode !== 'solid') {
+        const segs45 = computeHatchSegments2D(poly2D, spacing, Math.PI / 4);
+        const allSegs = (hMode === 'cross')
+          ? segs45.concat(computeHatchSegments2D(poly2D, spacing, -Math.PI / 4))
+          : segs45;
+
+        const hatchStrokeSize = Math.max(0.35, size * 0.65);
+        allSegs.forEach(seg => {
+          const p1 = fromPlane2D(seg[0][0], seg[0][1], pType, pOffset);
+          const p2 = fromPlane2D(seg[1][0], seg[1][1], pType, pOffset);
+          elements.push({
+            type: 'stroke',
+            style: 'pencil',
+            color,
+            size: hatchStrokeSize,
+            normal,
+            points: [
+              { x: p1.x, y: p1.y, z: p1.z, pressure: 0.45 },
+              { x: p2.x, y: p2.y, z: p2.z, pressure: 0.45 }
+            ]
+          });
+        });
+      }
+
+      return elements;
+    }
+
+    // Reconstruye escena desde JSON (compatible tanto con el formato nuevo ligero como con el anterior)
     function rebuildAllMeshesFromData(parsedArray) {
       strokesData.forEach(s => { if (s.mesh) scene.remove(s.mesh); });
       strokesData = [];
+      if (!Array.isArray(parsedArray)) return;
+
       parsedArray.forEach(item => {
-        if (!item.points || item.points.length < 2) return;
+        // Caso relleno translúcido
+        if (item.t === 'f' || item.type === 'fill') {
+          const fillObj = {
+            type: 'fill',
+            color: item.c || item.color || '#e2e8f0',
+            planeType: item.pt || item.planeType || 'XZ',
+            planeOffset: item.po ?? item.planeOffset ?? 0,
+            poly2D: item.p2 || item.poly2D || [],
+            mesh: null
+          };
+          if (fillObj.poly2D.length >= 3) {
+            fillObj.mesh = createFillMesh(fillObj);
+            scene.add(fillObj.mesh);
+            strokesData.push(fillObj);
+          }
+          return;
+        }
+
+        // Caso trazo (nuevo formato compacto o formato anterior)
+        let pts = [];
+        if (item.p && Array.isArray(item.p)) {
+          pts = item.p.map(arr => ({ x: arr[0], y: arr[1], z: arr[2], pressure: arr[3] ?? 0.55 }));
+        } else if (item.points && Array.isArray(item.points)) {
+          pts = simplifyPoints(item.points);
+        }
+        if (pts.length < 2) return;
+
+        const norm = item.n
+          ? { x: item.n[0], y: item.n[1], z: item.n[2] }
+          : (item.normal || { x: 0, y: 1, z: 0 });
+
         const strokeObj = {
-          style: item.style || 'pencil',
-          color: item.color || '#e2e8f0',
-          normal: item.normal || { x: 0, y: 1, z: 0 },
-          points: item.points,
+          type: 'stroke',
+          style: (item.s === 1 || item.style === 'pen') ? 'pen' : 'pencil',
+          color: item.c || item.color || '#e2e8f0',
+          size: item.sz || item.size || 1.0,
+          normal: norm,
+          points: pts,
           mesh: null
         };
         strokeObj.mesh = createStrokeMesh(strokeObj);
@@ -668,7 +965,18 @@
       });
     }
 
-    // --- LÁPIZ BORRADOR PARCIAL ---
+    function syncSceneWithStrokesArray(newArray) {
+      strokesData.forEach(s => { if (s.mesh) scene.remove(s.mesh); });
+      strokesData = newArray;
+      strokesData.forEach(s => {
+        if (!s.mesh) {
+          s.mesh = (s.type === 'fill') ? createFillMesh(s) : createStrokeMesh(s);
+        }
+        scene.add(s.mesh);
+      });
+    }
+
+    // --- LÁPIZ BORRADOR PARCIAL INTELIGENTE (CORTA LÍNEAS Y HATCHES SIN SATURAR DATOS) ---
     const projVec = new THREE.Vector3();
     function eraseAtScreenPoint(clientX, clientY) {
       const width = window.innerWidth;
@@ -679,12 +987,42 @@
 
       for (let sIdx = 0; sIdx < strokesData.length; sIdx++) {
         const stroke = strokesData[sIdx];
-        const pts = stroke.points;
-        let strokeHit = false;
-        const keepFlags = new Array(pts.length).fill(true);
 
-        for (let i = 0; i < pts.length; i++) {
-          projVec.set(pts[i].x, pts[i].y, pts[i].z).project(camera);
+        // Si es un relleno sólido translúcido, verificar si el borrador toca sus esquinas o centro
+        if (stroke.type === 'fill') {
+          let hitFill = false;
+          const poly = stroke.poly2D;
+          let cu = 0, cv = 0;
+          for (let i = 0; i < poly.length; i++) {
+            cu += poly[i][0]; cv += poly[i][1];
+            const p3 = fromPlane2D(poly[i][0], poly[i][1], stroke.planeType, stroke.planeOffset);
+            projVec.copy(p3).project(camera);
+            const sx = (projVec.x * 0.5 + 0.5) * width;
+            const sy = (-projVec.y * 0.5 + 0.5) * height;
+            if ((sx - clientX)**2 + (sy - clientY)**2 <= rSq * 1.5) hitFill = true;
+          }
+          const center3 = fromPlane2D(cu / poly.length, cv / poly.length, stroke.planeType, stroke.planeOffset);
+          projVec.copy(center3).project(camera);
+          const csx = (projVec.x * 0.5 + 0.5) * width;
+          const csy = (-projVec.y * 0.5 + 0.5) * height;
+          if ((csx - clientX)**2 + (csy - clientY)**2 <= rSq * 2.2) hitFill = true;
+
+          if (hitFill) {
+            anyModified = true;
+            scene.remove(stroke.mesh);
+          } else {
+            nextStrokes.push(stroke);
+          }
+          continue;
+        }
+
+        // Subdividir temporalmente segmentos largos solo para probar el corte con precisión
+        const densePts = interpolateForVisuals(stroke.points, true);
+        let strokeHit = false;
+        const keepFlags = new Array(densePts.length).fill(true);
+
+        for (let i = 0; i < densePts.length; i++) {
+          projVec.set(densePts[i].x, densePts[i].y, densePts[i].z).project(camera);
           if (projVec.z < -1 || projVec.z > 1) continue;
           const sx = (projVec.x * 0.5 + 0.5) * width;
           const sy = (-projVec.y * 0.5 + 0.5) * height;
@@ -703,16 +1041,19 @@
           scene.remove(stroke.mesh);
 
           let currentSegment = [];
-          for (let i = 0; i < pts.length; i++) {
+          for (let i = 0; i < densePts.length; i++) {
             if (keepFlags[i]) {
-              currentSegment.push(pts[i]);
+              currentSegment.push(densePts[i]);
             } else {
               if (currentSegment.length >= 2) {
+                const cleanPts = simplifyPoints(currentSegment);
                 const newPart = {
+                  type: 'stroke',
                   style: stroke.style,
                   color: stroke.color,
+                  size: stroke.size,
                   normal: stroke.normal,
-                  points: currentSegment,
+                  points: cleanPts,
                   mesh: null
                 };
                 newPart.mesh = createStrokeMesh(newPart);
@@ -723,11 +1064,14 @@
             }
           }
           if (currentSegment.length >= 2) {
+            const cleanPts = simplifyPoints(currentSegment);
             const newPart = {
+              type: 'stroke',
               style: stroke.style,
               color: stroke.color,
+              size: stroke.size,
               normal: stroke.normal,
-              points: currentSegment,
+              points: cleanPts,
               mesh: null
             };
             newPart.mesh = createStrokeMesh(newPart);
@@ -743,16 +1087,17 @@
       return anyModified;
     }
 
-    // --- EVENTOS DE DIBUJO Y BORRADO CON APPLE PENCIL ---
+    // --- EVENTOS DE DIBUJO, HATCH Y BORRADO CON APPLE PENCIL ---
     const raycaster = new THREE.Raycaster();
     const eraserCursor = document.getElementById('eraser-cursor');
     let isInteracting = false;
     let didEraseSomething = false;
     let rawPoints = [];
-    let livePreviewMesh = null;
+    let livePreviewGroup = null;
+    let pendingHatchElements = [];
     let activeTouches = 0;
 
-    function get3DPoint(e) {
+    function get3DPoint(e, forceSnap = false) {
       const rect = renderer.domElement.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -761,7 +1106,7 @@
       const hit = raycaster.ray.intersectPlane(mathPlane, target);
       if (!hit) return null;
 
-      if (snapToGrid && straightMode) {
+      if (snapToGrid && (straightMode || forceSnap)) {
         const step = 0.25;
         target.x = Math.round(target.x / step) * step;
         target.y = Math.round(target.y / step) * step;
@@ -782,6 +1127,13 @@
       eraserCursor.style.top = clientY + 'px';
     }
 
+    function clearLivePreview() {
+      if (livePreviewGroup) {
+        scene.remove(livePreviewGroup);
+        livePreviewGroup = null;
+      }
+    }
+
     renderer.domElement.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'touch') activeTouches++;
 
@@ -789,16 +1141,14 @@
       if (activeTouches >= 2 || (tool === 'orbit' && !isPen)) {
         isInteracting = false;
         updateEraserCursor(0, 0, false);
-        if (livePreviewMesh) {
-          scene.remove(livePreviewMesh);
-          livePreviewMesh = null;
-        }
+        clearLivePreview();
         controls.enabled = true;
         return;
       }
 
       controls.enabled = false;
       isInteracting = true;
+      pendingHatchElements = [];
 
       if (tool === 'eraser') {
         pushUndoState();
@@ -807,7 +1157,8 @@
         return;
       }
 
-      const pt = get3DPoint(e);
+      const useSnap = (tool === 'rect-hatch');
+      const pt = get3DPoint(e, useSnap);
       if (!pt) return;
       const pressure = (isPen && e.pressure > 0) ? e.pressure : 0.55;
       rawPoints = [{ x: pt.x, y: pt.y, z: pt.z, pressure }];
@@ -825,31 +1176,97 @@
         return;
       }
 
-      const pt = get3DPoint(e);
-      if (!pt) return;
+      const useSnap = (tool === 'rect-hatch');
+      const pt = get3DPoint(e, useSnap);
+      if (!pt || rawPoints.length === 0) return;
       const pressure = (e.pointerType === 'pen' && e.pressure > 0) ? e.pressure : 0.55;
 
+      // MODO 1: MURO / RECTÁNGULO CON HATCH
+      if (tool === 'rect-hatch') {
+        const start = rawPoints[0];
+        const [u1, v1] = toPlane2D(start, currentPlaneType);
+        const [u2, v2] = toPlane2D(pt, currentPlaneType);
+        if (Math.abs(u2 - u1) < 0.05 && Math.abs(v2 - v1) < 0.05) return;
+
+        const rectPoly = [
+          [u1, v1],
+          [u2, v1],
+          [u2, v2],
+          [u1, v2]
+        ];
+
+        clearLivePreview();
+        pendingHatchElements = buildHatchElements(
+          rectPoly, currentPlaneType, planeOffset,
+          hatchMode, hatchSpacing, currentColor, currentStrokeSize
+        );
+        livePreviewGroup = new THREE.Group();
+        pendingHatchElements.forEach(el => {
+          el.mesh = (el.type === 'fill') ? createFillMesh(el) : createStrokeMesh(el);
+          livePreviewGroup.add(el.mesh);
+        });
+        scene.add(livePreviewGroup);
+        return;
+      }
+
+      // MODO 2: POLÍGONO LIBRE CON HATCH
+      if (tool === 'poly-hatch') {
+        const last = rawPoints[rawPoints.length - 1];
+        const distSq = (last.x - pt.x)**2 + (last.y - pt.y)**2 + (last.z - pt.z)**2;
+        if (distSq > 0.03) {
+          rawPoints.push({ x: pt.x, y: pt.y, z: pt.z, pressure });
+        }
+        if (rawPoints.length < 3) return;
+
+        const poly2D = rawPoints.map(p => toPlane2D(p, currentPlaneType));
+        clearLivePreview();
+        pendingHatchElements = buildHatchElements(
+          poly2D, currentPlaneType, planeOffset,
+          hatchMode, hatchSpacing, currentColor, currentStrokeSize
+        );
+        livePreviewGroup = new THREE.Group();
+        pendingHatchElements.forEach(el => {
+          el.mesh = (el.type === 'fill') ? createFillMesh(el) : createStrokeMesh(el);
+          livePreviewGroup.add(el.mesh);
+        });
+        scene.add(livePreviewGroup);
+        return;
+      }
+
+      // MODO 3: LÁPIZ BOCETO Y PLUMA TINTA
       if (straightMode) {
-        rawPoints = [rawPoints[0], { x: pt.x, y: pt.y, z: pt.z, pressure }];
+        const sVec = new THREE.Vector3(rawPoints[0].x, rawPoints[0].y, rawPoints[0].z);
+        const eVec = new THREE.Vector3(pt.x, pt.y, pt.z);
+        const dir = eVec.clone().sub(sVec);
+        if (dir.lengthSq() > 0.0004) {
+          dir.normalize();
+          const over = (tool === 'pencil') ? 0.09 : 0.03;
+          const pStart = sVec.clone().sub(dir.clone().multiplyScalar(over));
+          const pEnd = eVec.clone().add(dir.clone().multiplyScalar(over));
+          rawPoints = [
+            { x: pStart.x, y: pStart.y, z: pStart.z, pressure: rawPoints[0].pressure },
+            { x: pEnd.x, y: pEnd.y, z: pEnd.z, pressure }
+          ];
+        }
       } else {
         const last = rawPoints[rawPoints.length - 1];
         const distSq = (last.x - pt.x)**2 + (last.y - pt.y)**2 + (last.z - pt.z)**2;
-        if (distSq > 0.0025) {
+        if (distSq > 0.012) {
           rawPoints.push({ x: pt.x, y: pt.y, z: pt.z, pressure });
         }
       }
 
-      if (livePreviewMesh) scene.remove(livePreviewMesh);
-      const isPencil = (tool !== 'pen');
-      const densePts = densifyPoints(rawPoints, straightMode, isPencil);
+      clearLivePreview();
       const previewObj = {
-        style: isPencil ? 'pencil' : 'pen',
+        type: 'stroke',
+        style: (tool === 'pen') ? 'pen' : 'pencil',
         color: currentColor,
-        normal: { x: mathPlane.normal.x, y: mathPlane.normal.y, z: mathPlane.normal.z },
-        points: densePts
+        size: currentStrokeSize,
+        normal: getPlaneNormalObj(currentPlaneType),
+        points: rawPoints
       };
-      livePreviewMesh = createStrokeMesh(previewObj);
-      scene.add(livePreviewMesh);
+      livePreviewGroup = createStrokeMesh(previewObj);
+      scene.add(livePreviewGroup);
     });
 
     function endInteraction(e) {
@@ -864,19 +1281,30 @@
         if (tool === 'eraser') {
           if (didEraseSomething) autoSaveLocal();
           didEraseSomething = false;
-        } else if (livePreviewMesh && rawPoints.length >= 2) {
+        } else if ((tool === 'rect-hatch' || tool === 'poly-hatch') && pendingHatchElements.length > 0) {
           pushUndoState();
-          const isPencil = (tool !== 'pen');
-          const densePts = densifyPoints(rawPoints, straightMode, isPencil);
+          clearLivePreview();
+          pendingHatchElements.forEach(el => {
+            el.mesh = (el.type === 'fill') ? createFillMesh(el) : createStrokeMesh(el);
+            scene.add(el.mesh);
+            strokesData.push(el);
+          });
+          pendingHatchElements = [];
+          autoSaveLocal();
+        } else if (livePreviewGroup && rawPoints.length >= 2) {
+          pushUndoState();
+          const cleanPts = simplifyPoints(rawPoints);
           const finalStroke = {
-            style: isPencil ? 'pencil' : 'pen',
+            type: 'stroke',
+            style: (tool === 'pen') ? 'pen' : 'pencil',
             color: currentColor,
-            normal: { x: mathPlane.normal.x, y: mathPlane.normal.y, z: mathPlane.normal.z },
-            points: densePts,
-            mesh: livePreviewMesh
+            size: currentStrokeSize,
+            normal: getPlaneNormalObj(currentPlaneType),
+            points: cleanPts,
+            mesh: livePreviewGroup
           };
           strokesData.push(finalStroke);
-          livePreviewMesh = null;
+          livePreviewGroup = null;
           autoSaveLocal();
         }
         rawPoints = [];
@@ -887,34 +1315,71 @@
     renderer.domElement.addEventListener('pointerup', endInteraction);
     renderer.domElement.addEventListener('pointercancel', endInteraction);
 
-    // --- BOTONES DE HERRAMIENTAS Y COLORES ---
+    // --- BOTONES DE HERRAMIENTAS, HATCH, GROSOR Y COLORES ---
     const btnPencil = document.getElementById('btn-pencil');
     const btnPen = document.getElementById('btn-pen');
+    const btnRectHatch = document.getElementById('btn-rect-hatch');
+    const btnPolyHatch = document.getElementById('btn-poly-hatch');
     const btnEraser = document.getElementById('btn-eraser');
     const btnOrbit = document.getElementById('btn-orbit');
+
+    const hatchOptionsBox = document.getElementById('hatch-options');
     const eraserSizeBox = document.getElementById('eraser-size-box');
     const eraserSlider = document.getElementById('eraser-slider');
     const eraserLbl = document.getElementById('eraser-lbl');
+    const strokeSizeSlider = document.getElementById('stroke-size-slider');
+    const strokeSizeLbl = document.getElementById('stroke-size-lbl');
+    const hatchSpaceSlider = document.getElementById('hatch-space-slider');
+    const hatchSpaceLbl = document.getElementById('hatch-space-lbl');
 
     function setTool(selected) {
       tool = selected;
       btnPencil.classList.toggle('active', tool === 'pencil');
       btnPen.classList.toggle('active', tool === 'pen');
+      btnRectHatch.classList.toggle('active', tool === 'rect-hatch');
+      btnPolyHatch.classList.toggle('active', tool === 'poly-hatch');
       btnEraser.classList.toggle('active', tool === 'eraser');
       btnOrbit.classList.toggle('active', tool === 'orbit');
+
       eraserSizeBox.classList.toggle('visible', tool === 'eraser');
+      hatchOptionsBox.classList.toggle('visible', tool === 'rect-hatch' || tool === 'poly-hatch');
     }
 
     btnPencil.addEventListener('click', () => setTool('pencil'));
     btnPen.addEventListener('click', () => setTool('pen'));
+    btnRectHatch.addEventListener('click', () => setTool('rect-hatch'));
+    btnPolyHatch.addEventListener('click', () => setTool('poly-hatch'));
     btnEraser.addEventListener('click', () => setTool('eraser'));
     btnOrbit.addEventListener('click', () => setTool('orbit'));
 
+    // Estilos de Hatch
+    const hatchStyleBtns = document.querySelectorAll('.hatch-style-btn');
+    hatchStyleBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        hatchStyleBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        hatchMode = btn.getAttribute('data-hmode');
+      });
+    });
+
+    hatchSpaceSlider.addEventListener('input', (e) => {
+      hatchSpacing = parseFloat(e.target.value);
+      hatchSpaceLbl.textContent = hatchSpacing.toFixed(2) + ' m';
+    });
+
+    // Grosor de Lápiz / Pluma
+    strokeSizeSlider.addEventListener('input', (e) => {
+      currentStrokeSize = parseFloat(e.target.value);
+      strokeSizeLbl.textContent = currentStrokeSize.toFixed(1) + 'x';
+    });
+
+    // Tamaño del Borrador
     eraserSlider.addEventListener('input', (e) => {
       eraserRadiusPx = parseInt(e.target.value, 10);
       eraserLbl.textContent = eraserRadiusPx + ' px';
     });
 
+    // Selección de Color
     const swatches = document.querySelectorAll('.color-swatch');
     const customColorInput = document.getElementById('custom-color');
 
@@ -951,15 +1416,15 @@
 
     btnUndo.addEventListener('click', () => {
       if (undoStack.length === 0) return;
-      const prevJson = undoStack.pop();
-      rebuildAllMeshesFromData(JSON.parse(prevJson));
+      const prevArray = undoStack.pop();
+      syncSceneWithStrokesArray(prevArray);
       autoSaveLocal();
     });
 
     btnClear.addEventListener('click', () => {
       if (strokesData.length === 0) return;
       pushUndoState();
-      rebuildAllMeshesFromData([]);
+      syncSceneWithStrokesArray([]);
       autoSaveLocal();
     });
 
@@ -976,7 +1441,6 @@
       currentGridSize = size;
       gridSizeLbl.textContent = `${size}x${size} m`;
 
-      // 1. Actualizar cuadrícula base del suelo
       scene.remove(floorGrid);
       floorGrid = new THREE.GridHelper(
         size + 4, size + 4,
@@ -986,7 +1450,6 @@
       scene.add(floorGrid);
       axesHelper.position.set(-(size / 2 + 2), 0.01, -(size / 2 + 2));
 
-      // 2. Actualizar cuadrícula y plano activo de dibujo
       activeGridGroup.remove(activeGrid);
       activeGrid = new THREE.GridHelper(size, size, 0x60a5fa, 0x334155);
       activeGrid.material.transparent = true;
@@ -998,7 +1461,6 @@
       newPlaneGeo.rotateX(-Math.PI / 2);
       activePlaneMesh.geometry = newPlaneGeo;
 
-      // 3. Ajustar el rango del deslizador de Nivel/Eje automáticamente
       const half = size / 2;
       planeSlider.min = -half;
       planeSlider.max = half;
@@ -1049,13 +1511,14 @@
       }
     });
 
-    // --- SISTEMA DE GUARDADO DE PROYECTOS ---
+    // --- SISTEMA DE GUARDADO DE PROYECTOS OPTIMIZADO (CON BLOB NATIVO) ---
     const modalOverlay = document.getElementById('modal-overlay');
     const btnProjects = document.getElementById('btn-projects');
     const btnCloseModal = document.getElementById('btn-close-modal');
     const btnSaveProject = document.getElementById('btn-save-project');
     const projectNameInput = document.getElementById('project-name-input');
     const projectListEl = document.getElementById('project-list');
+    const currentWeightLbl = document.getElementById('current-weight-lbl');
     const btnExportJson = document.getElementById('btn-export-json');
     const btnImportJson = document.getElementById('btn-import-json');
     const btnExportPng = document.getElementById('btn-export-png');
@@ -1071,7 +1534,14 @@
       }
     }
 
+    function updateWeightIndicator() {
+      const jsonStr = serializeStrokes();
+      const kb = (jsonStr.length / 1024).toFixed(1);
+      currentWeightLbl.textContent = `${kb} KB (Optimizado ⚡)`;
+    }
+
     function renderProjectList() {
+      updateWeightIndicator();
       const projects = getSavedProjects();
       const names = Object.keys(projects);
       projectListEl.innerHTML = '';
@@ -1136,19 +1606,27 @@
         date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
         strokes: JSON.parse(serializeStrokes())
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+      } catch (err) {
+        alert('Memoria interna llena. Usa "Bajar Archivo" para guardar en tu iPad.');
+      }
       projectNameInput.value = '';
       renderProjectList();
     });
 
+    // Descarga instantánea con Blob nativo (sin trabar Safari en iPad)
     btnExportJson.addEventListener('click', () => {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(serializeStrokes());
+      const jsonStr = serializeStrokes();
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.setAttribute("href", dataStr);
-      a.setAttribute("download", "proyecto_croquis3d.json");
+      a.href = url;
+      a.download = 'proyecto_croquis3d.json';
       document.body.appendChild(a);
       a.click();
       a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
     });
 
     btnImportJson.addEventListener('click', () => fileInput.click());
@@ -1173,18 +1651,24 @@
 
     btnExportPng.addEventListener('click', () => {
       renderer.render(scene, camera);
-      const dataUrl = renderer.domElement.toDataURL('image/png');
-      const a = document.createElement('a');
-      a.href = dataUrl;
-      a.download = 'croquis_3d.png';
-      a.click();
+      renderer.domElement.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'croquis_3d.png';
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+      }, 'image/png');
     });
 
+    // Restaurar y optimizar automáticamente cualquier dibujo previo al abrir
     window.addEventListener('DOMContentLoaded', () => {
       try {
         const saved = localStorage.getItem('croquis3d_autosave');
         if (saved) {
           rebuildAllMeshesFromData(JSON.parse(saved));
+          autoSaveLocal(); // Guarda inmediatamente la versión ya comprimida
         }
       } catch (e) {}
     });
